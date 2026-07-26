@@ -34,7 +34,7 @@
             direction: rtl;
         }
 
-        /* Container - shifted upward for optimal mobile framing */
+        /* Container - shifted upward for optimal framing */
         .dhikr-container {
             text-align: center;
             padding: 20px;
@@ -63,28 +63,50 @@
             opacity: 0;
         }
 
-        /* Bottom Donate Label */
-        .website-label {
+        /* Centered Bottom Footer Wrapper */
+        .bottom-bar {
             position: fixed;
             bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            direction: ltr;
+            z-index: 10;
+        }
+
+        /* Shared Style for Bottom Labels (Donate & Fullscreen) */
+        .website-label {
             font-family: 'Tajawal', system-ui, -apple-system, sans-serif;
             font-size: 0.9rem;
             font-weight: 600;
-            color: #475569;         /* Soft muted slate */
+            color: #64748b;         
             letter-spacing: 1px;
             cursor: pointer;
-            opacity: 0.7;           
-            transition: opacity 0.25s ease, color 0.25s ease;
+            opacity: 0.85;          
+            transition: opacity 0.25s ease, color 0.25s ease, background 0.25s ease;
             user-select: none;
             direction: ltr;
             padding: 8px 16px;
             border-radius: 20px;
+            background: transparent;
+            border: none;
+            outline: none;
         }
 
         .website-label:hover, .website-label:active {
             opacity: 1;
-            color: #cbd5e1;         
-            background: rgba(255, 255, 255, 0.05);
+            color: #f1f5f9;         
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Strictly hide Fullscreen button on mobile / touch devices */
+        @media (hover: none), (pointer: coarse), (max-width: 768px) {
+            .fullscreen-btn {
+                display: none !important;
+            }
         }
 
         /* --- RESPONSIVE MODAL POPUP --- */
@@ -229,8 +251,11 @@
         <div class="dhikr-text" id="dhikrDisplay">سُبْحَانَ اللَّهِ</div>
     </main>
 
-    <!-- Trigger for Donation Modal -->
-    <div class="website-label" id="donateTrigger">Donate</div>
+    <!-- Centered Bottom Bar -->
+    <div class="bottom-bar">
+        <div class="website-label" id="donateTrigger">Donate</div>
+        <button class="website-label fullscreen-btn" id="fullscreenToggle" aria-label="Toggle Fullscreen">Fullscreen</button>
+    </div>
 
     <!-- Responsive Donate Modal -->
     <div class="modal-overlay" id="donateModal">
@@ -321,6 +346,31 @@
         // Close on 'Escape' key press
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') hideModal();
+        });
+
+        // --- DESKTOP FULLSCREEN LOGIC ---
+        const fullscreenToggle = document.getElementById('fullscreenToggle');
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch((err) => {
+                    console.log('Fullscreen error:', err.message);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        fullscreenToggle.addEventListener('click', toggleFullscreen);
+
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                fullscreenToggle.textContent = 'Exit Fullscreen';
+            } else {
+                fullscreenToggle.textContent = 'Fullscreen';
+            }
         });
 
         // --- SCREEN WAKE LOCK LOGIC ---
