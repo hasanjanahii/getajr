@@ -8,10 +8,10 @@
     <!-- Favicon: Dark Mode background with Purple Desktop Computer SVG -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b0f19'/%3E%3Crect x='10' y='12' width='44' height='28' rx='4' fill='%238b5cf6'/%3E%3Crect x='13' y='15' width='38' height='22' rx='2' fill='%230b0f19'/%3E%3Crect x='28' y='40' width='8' height='8' fill='%23a855f7'/%3E%3Crect x='20' y='48' width='24' height='4' rx='2' fill='%23a855f7'/%3E%3C/svg%3E">
 
-    <!-- Clean Arabic Font from Google Fonts -->
+    <!-- Google Fonts: Included Tajawal + Noto Sans Arabic & Amiri for 100% Dagger Alef / Tashkeel coverage -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Noto+Sans+Arabic:wght@500;700&family=Tajawal:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
         * {
@@ -22,7 +22,8 @@
         }
 
         body {
-            font-family: 'Tajawal', sans-serif;
+            /* Font stack includes Noto Sans Arabic & iOS native Geeza/SF Arabic to guarantee dagger alef rendering */
+            font-family: 'Tajawal', 'Noto Sans Arabic', 'Amiri', -apple-system, 'SF Arabic', 'Geeza Pro', sans-serif;
             background-color: #0b0f19; /* Deep dark background */
             color: #e2e8f0;            /* Soft off-white to prevent glare */
             height: 100vh;
@@ -51,7 +52,7 @@
             /* Gentle cross-fade transition */
             transition: opacity 0.35s ease-in-out;
 
-            /* Hardware acceleration & smooth mobile Arabic glyph rendering */
+            /* Hardware acceleration & mobile diacritic stability */
             will-change: opacity;
             transform: translateZ(0);
             -webkit-font-smoothing: antialiased;
@@ -273,6 +274,7 @@
     </div>
 
     <script>
+        // Athkar array using standardized Unicode strings
         const athkar = [
             "سبحان الله",
             "الحمد لله",
