@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dhikr Screen</title>
+    
+    <!-- Favicon: Dark Mode background with Purple Desktop Computer SVG -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b0f19'/%3E%3Crect x='10' y='12' width='44' height='28' rx='4' fill='%238b5cf6'/%3E%3Crect x='13' y='15' width='38' height='22' rx='2' fill='%230b0f19'/%3E%3Crect x='28' y='40' width='8' height='8' fill='%23a855f7'/%3E%3Crect x='20' y='48' width='24' height='4' rx='2' fill='%23a855f7'/%3E%3C/svg%3E">
+
+    <!-- Clean Arabic Font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #0b0f19; /* Deep dark background */
+            color: #e2e8f0;            /* Soft off-white to prevent glare */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            direction: rtl;
+        }
+
+        /* Container - shifted upward for optimal mobile framing */
+        .dhikr-container {
+            text-align: center;
+            padding: 20px;
+            width: 90%;
+            max-width: 1000px;
+            transform: translateY(-6vh); 
+        }
+
+        .dhikr-text {
+            font-size: clamp(2.5rem, 6.5vw, 5.5rem);
+            font-weight: 700;
+            line-height: 1.4;
+            opacity: 1;
+            /* Gentle cross-fade transition */
+            transition: opacity 0.35s ease-in-out;
+
+            /* Hardware acceleration & smooth mobile Arabic glyph rendering */
+            will-change: opacity;
+            transform: translateZ(0);
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        .dhikr-text.fade {
+            opacity: 0;
+        }
+
+        /* Bottom Donate Label */
+        .website-label {
+            position: fixed;
+            bottom: 24px;
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #475569;         /* Soft muted slate */
+            letter-spacing: 1px;
+            cursor: pointer;
+            opacity: 0.7;           
+            transition: opacity 0.25s ease, color 0.25s ease;
+            user-select: none;
+            direction: ltr;
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+
+        .website-label:hover, .website-label:active {
+            opacity: 1;
+            color: #cbd5e1;         
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* --- RESPONSIVE MODAL POPUP --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 1000;
+            padding: 20px;
+            direction: ltr;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-card {
+            background: #111827;
+            border: 1px solid #1f2937;
+            width: 100%;
+            max-width: 420px;
+            max-height: 85vh;
+            overflow-y: auto;
+            border-radius: 24px;
+            padding: 28px 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95) translateY(10px);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: center;
+            position: relative;
+
+            /* Hide side scrollbar for clean mobile scrolling */
+            -webkit-overflow-scrolling: touch;
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        .modal-card::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: #1f2937;
+            border: none;
+            color: #9ca3af;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: #374151;
+            color: #fff;
+        }
+
+        .modal-icon {
+            width: 52px;
+            height: 52px;
+            background: rgba(139, 92, 246, 0.15);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-icon svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .modal-desc {
+            font-size: 0.92rem;
+            color: #9ca3af;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .modal-desc p {
+            margin-bottom: 8px;
+        }
+
+        /* Buttons Stack */
+        .donate-links {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .donate-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 20px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            background: #1f2937;
+            color: #e5e7eb;
+            border: 1px solid #374151;
+            transition: all 0.25s ease;
+        }
+
+        .donate-btn:hover, .donate-btn:active {
+            background: #8b5cf6;
+            color: #ffffff;
+            border-color: #8b5cf6;
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <main class="dhikr-container">
+        <div class="dhikr-text" id="dhikrDisplay">سبحان الله</div>
+    </main>
+
+    <!-- Trigger for Donation Modal -->
+    <div class="website-label" id="donateTrigger">Donate</div>
+
+    <!-- Responsive Donate Modal -->
+    <div class="modal-overlay" id="donateModal">
+        <div class="modal-card">
+            <button class="modal-close" id="closeModal" aria-label="Close">&times;</button>
+            
+            <div class="modal-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                    <rect x="10" y="12" width="44" height="28" rx="4" fill="#8b5cf6"/>
+                    <rect x="13" y="15" width="38" height="22" rx="2" fill="#0b0f19"/>
+                    <rect x="28" y="40" width="8" height="8" fill="#a855f7"/>
+                    <rect x="20" y="48" width="24" height="4" rx="2" fill="#a855f7"/>
+                </svg>
+            </div>
+            
+            <div class="modal-desc">
+                <p dir="rtl" style="font-size: 1.05rem; font-weight: 600; color: #e2e8f0;">السلام عليكم</p>
+                <p>I'm Hasan Janahi, the founder and developer of this website. Hope you love this project. Share this with someone who would use it!</p>
+                <p dir="rtl" style="font-size: 1.05rem; font-weight: 600; color: #e2e8f0; margin-top: 10px;">جزاكم الله خيرا</p>
+            </div>
+
+            <div class="donate-links">
+                <a href="#" target="_blank" rel="noopener" class="donate-btn">
+                    Donate Palestine
+                </a>
+                <a href="#" target="_blank" rel="noopener" class="donate-btn">
+                    My Shop
+                </a>
+                <a href="https://instagram.com/hasanjanahii" target="_blank" rel="noopener" class="donate-btn">
+                    Instagram
+                </a>
+                <a href="#" target="_blank" rel="noopener" class="donate-btn">
+                    YouTube
+                </a>
+                <a href="mailto:contact@example.com" class="donate-btn">
+                    Email
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const athkar = [
+            "سبحان الله",
+            "الحمد لله",
+            "لا إله إلا الله",
+            "الله أكبر",
+            "لا حول ولا قوة إلا بالله"
+        ];
+
+        let currentIndex = 0;
+        const dhikrDisplay = document.getElementById('dhikrDisplay');
+
+        // Cycle every 2.5 seconds (2500ms)
+        setInterval(() => {
+            dhikrDisplay.classList.add('fade');
+
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % athkar.length;
+                dhikrDisplay.textContent = athkar[currentIndex];
+                dhikrDisplay.classList.remove('fade');
+            }, 350);
+
+        }, 2500);
+
+        // --- MODAL CONTROLS ---
+        const donateTrigger = document.getElementById('donateTrigger');
+        const donateModal = document.getElementById('donateModal');
+        const closeModal = document.getElementById('closeModal');
+
+        function openModal() {
+            donateModal.classList.add('active');
+        }
+
+        function hideModal() {
+            donateModal.classList.remove('active');
+        }
+
+        donateTrigger.addEventListener('click', openModal);
+        closeModal.addEventListener('click', hideModal);
+
+        // Close on background click
+        donateModal.addEventListener('click', (e) => {
+            if (e.target === donateModal) hideModal();
+        });
+
+        // Close on 'Escape' key press
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') hideModal();
+        });
+
+        // --- SCREEN WAKE LOCK LOGIC ---
+        let wakeLock = null;
+
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.log('Wake Lock Error:', err.name, err.message);
+            }
+        }
+
+        requestWakeLock();
+
+        document.addEventListener('visibilitychange', () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                requestWakeLock();
+            }
+        });
+
+        document.addEventListener('click', () => {
+            if (!wakeLock) requestWakeLock();
+        }, { once: true });
+    </script>
+</body>
+</html>
