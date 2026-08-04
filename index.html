@@ -93,7 +93,7 @@
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 dark:bg-slate-950 dark:text-slate-100 flex flex-col overflow-y-auto transition-colors duration-200" style="height:100vh;height:100dvh;">
-
+ 
   <!-- TOP APP BAR -->
   <header class="min-h-[3.75rem] lg:min-h-16 border-b border-slate-200 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 px-2.5 lg:px-6 flex items-center justify-between z-20 shrink-0 backdrop-blur-md mobile-no-blur transition-colors duration-200 gap-2">
     <div class="flex items-center gap-2 lg:gap-3 min-w-0">
@@ -105,33 +105,33 @@
         <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block truncate" data-i18n="subtitle">Quran Video Creator</p>
       </div>
     </div>
-
+ 
     <!-- Controls & Toggles -->
     <div class="flex items-center gap-1 lg:gap-3 shrink-0">
       <button id="langToggleBtn" onclick="toggleLanguage()" class="w-9 h-9 lg:w-auto lg:h-auto lg:px-3.5 lg:py-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-semibold text-slate-700 dark:text-slate-300 transition flex items-center justify-center lg:gap-2 shrink-0" title="Toggle Language">
         <i class="fa-solid fa-globe text-indigo-500 text-base lg:text-sm"></i>
         <span id="langLabel" class="hidden lg:inline">عربي</span>
       </button>
-
+ 
       <button onclick="toggleTheme()" class="w-9 h-9 lg:w-auto lg:h-auto lg:p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition flex items-center justify-center shrink-0" title="Toggle Light/Dark Theme">
         <i class="fa-solid fa-sun hidden dark:block text-amber-400 text-base lg:text-base"></i>
         <i class="fa-solid fa-moon block dark:hidden text-base lg:text-base"></i>
       </button>
-
+ 
       <div class="h-5 lg:h-6 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 shrink-0"></div>
-
+ 
       <button id="exportBtn" onclick="startExportProcess()" class="w-9 h-9 lg:w-auto lg:h-auto px-0 lg:px-5 py-0 lg:py-2.5 rounded-lg lg:rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition flex items-center justify-center lg:gap-2 shadow-lg shadow-indigo-950/50 shrink-0" title="Export MP4">
         <i class="fa-solid fa-download text-base lg:text-sm"></i>
         <span data-i18n="export" class="hidden lg:inline">Export MP4</span>
       </button>
-
+ 
       <button id="donateBtn" onclick="openDonateModal()" class="w-9 h-9 lg:w-auto lg:h-auto px-0 lg:px-5 py-0 lg:py-2.5 rounded-lg lg:rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition flex items-center justify-center lg:gap-2 shadow-lg shadow-indigo-950/50 shrink-0" title="Donate">
         <i class="fa-solid fa-coins text-base lg:text-sm"></i>
         <span data-i18n="donate" class="hidden lg:inline">Donate</span>
       </button>
     </div>
   </header>
-
+ 
   <!-- MOBILE NAVIGATION TABS -->
   <div class="lg:hidden flex border-b border-slate-800/80 bg-slate-900/95 text-xs font-semibold shrink-0 shadow-sm backdrop-blur-md mobile-no-blur">
     <button onclick="switchMobileView('canvas')" id="mTabCanvas" class="flex-1 py-2.5 flex items-center justify-center gap-1.5 font-bold text-white bg-indigo-600 active:scale-95 transition-all duration-150">
@@ -144,7 +144,7 @@
       <i class="fa-solid fa-sliders text-xs"></i> <span>Full Style</span>
     </button>
   </div>
-
+ 
   <!-- MAIN PROFESSIONAL EDITOR CONTAINER -->
   <div id="mainContainer" class="flex-1 flex overflow-hidden flex-col lg:flex-row relative">
     
@@ -154,7 +154,7 @@
         <i class="fa-solid fa-palette text-indigo-500 text-base"></i>
         <h2 class="text-xs lg:text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="styleTitle">Canvas & Visuals</h2>
       </div>
-
+ 
       <div class="p-5 flex flex-col gap-6">
         <div class="flex flex-col gap-2.5">
           <label class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="formatLabel">Video Dimensions</label>
@@ -169,7 +169,7 @@
             </button>
           </div>
         </div>
-
+ 
         <div class="flex flex-col gap-3 pt-3 border-t border-slate-200 dark:border-slate-800/80">
           <label class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="colorsLabel">Canvas Palette</label>
           
@@ -181,7 +181,7 @@
                 <span id="bgColorVal" class="text-xs lg:text-sm font-mono text-slate-600 dark:text-slate-400 uppercase">#000000</span>
               </div>
             </div>
-
+ 
             <div class="flex flex-col gap-1.5">
               <span class="text-xs font-medium text-slate-500 dark:text-slate-400" data-i18n="textColor">Text Color</span>
               <div class="flex items-center gap-2 border border-slate-200 dark:border-slate-800 p-2 rounded-xl bg-slate-50 dark:bg-slate-950/60">
@@ -191,7 +191,7 @@
             </div>
           </div>
         </div>
-
+ 
         <div class="flex flex-col gap-5 pt-3 border-t border-slate-200 dark:border-slate-800/80">
           <div class="flex flex-col gap-2">
             <div class="flex justify-between items-center">
@@ -200,7 +200,7 @@
             </div>
             <input type="range" id="fontSize" min="28" max="110" value="64" class="w-full accent-indigo-500 bg-slate-200 dark:bg-slate-800 rounded-lg h-2 cursor-pointer">
           </div>
-
+ 
           <div class="flex flex-col gap-2">
             <div class="flex justify-between items-center">
               <label for="lineSpacing" class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="lineSpacingLabel">Line Spacing</label>
@@ -208,7 +208,7 @@
             </div>
             <input type="range" id="lineSpacing" min="1.0" max="3.0" step="0.05" value="1.85" class="w-full accent-indigo-500 bg-slate-200 dark:bg-slate-800 rounded-lg h-2 cursor-pointer">
           </div>
-
+ 
           <div class="flex flex-col gap-2">
             <div class="flex justify-between items-center">
               <label for="verticalShift" class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="verticalShiftLabel">Vertical Position Shift</label>
@@ -217,7 +217,7 @@
             <input type="range" id="verticalShift" min="-300" max="300" value="0" class="w-full accent-indigo-500 bg-slate-200 dark:bg-slate-800 rounded-lg h-2 cursor-pointer">
           </div>
         </div>
-
+ 
         <div class="flex flex-col gap-2 pt-3 border-t border-slate-200 dark:border-slate-800/80 mb-6 lg:mb-0">
           <label class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="audioLabel">Custom Audio File (MP3/WAV)</label>
           <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-950/40 transition group">
@@ -231,14 +231,14 @@
         </div>
       </div>
     </aside>
-
+ 
     <!-- CENTER PANEL: WORKSPACE STAGE & CANVAS PREVIEW -->
     <main id="viewportContainer" class="flex-1 bg-slate-100 dark:bg-slate-950 transition-colors duration-200 flex flex-col items-center lg:justify-center relative px-3 pt-2 pb-2 lg:p-6 select-none shrink-0 order-1 lg:order-2 h-full overflow-y-auto lg:overflow-hidden">
       
       <div id="canvasWrapper" class="relative shadow-2xl rounded-3xl lg:rounded-2xl overflow-hidden flex items-center justify-center border border-slate-300 dark:border-slate-800/80 transition-all duration-200 bg-black leading-none my-auto">
         <canvas id="videoCanvas" width="1080" height="1920" style="aspect-ratio: 9 / 16;" class="w-auto h-auto object-contain block border-0 p-0 m-0"></canvas>
       </div>
-
+ 
       <!-- MOBILE-ONLY QUICK CONTROLS -->
       <div class="lg:hidden w-full max-w-xs flex flex-col gap-1.5 z-10 shrink-0 mt-1.5">
         <div class="bg-slate-900/95 border border-slate-800/80 rounded-2xl px-3 py-2.5 flex flex-col gap-2.5 backdrop-blur-md mobile-no-blur shadow-lg">
@@ -255,24 +255,24 @@
             </button>
           </div>
         </div>
-
+ 
         <div class="bg-slate-900/95 border border-slate-800/80 rounded-2xl p-2 flex items-center gap-1.5 backdrop-blur-md mobile-no-blur shadow-lg">
           <div class="flex items-center gap-1 bg-slate-950/80 border border-slate-800/80 rounded-xl px-2 py-1.5 flex-1 min-w-0">
             <span class="text-[10px] font-bold text-slate-500 uppercase shrink-0">Surah</span>
             <select id="mSurahNum" onchange="syncSurahInput(this.value)" class="w-full bg-transparent text-xs font-bold text-slate-100 text-center focus:outline-none cursor-pointer"></select>
           </div>
-
+ 
           <div class="flex items-center gap-1 bg-slate-950/80 border border-slate-800/80 rounded-xl px-2 py-1.5 flex-1 min-w-0">
             <span class="text-[10px] font-bold text-slate-500 uppercase shrink-0">Ayah</span>
             <select id="mAyahNum" onchange="syncAyahInput(this.value)" class="w-full bg-transparent text-xs font-bold text-slate-100 text-center focus:outline-none cursor-pointer"></select>
           </div>
-
+ 
           <button onclick="viewAyahAndAudio()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-indigo-950/50 transition" title="View Ayah">
             <i class="fa-solid fa-right-to-bracket text-xs"></i>
           </button>
         </div>
       </div>
-
+ 
       <!-- Professional Transport Bar -->
       <div class="my-1 lg:mt-5 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 px-6 lg:px-8 py-2 lg:py-2.5 rounded-full shadow-2xl backdrop-blur-md mobile-no-blur flex items-center gap-5 lg:gap-8 z-10 shrink-0 transition-colors duration-200">
         <button id="playBtn" onclick="togglePlay()" class="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center text-xs lg:text-sm transition shadow-lg shadow-indigo-950/30">
@@ -287,7 +287,7 @@
           <span id="totalTime">00:00</span>
         </div>
       </div>
-
+ 
       <div class="lg:hidden w-full max-w-xs mb-1 flex items-center gap-2 z-10 shrink-0">
         <button onclick="startExportProcess()" class="flex-1 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition">
           <i class="fa-solid fa-download text-xs"></i>
@@ -299,14 +299,14 @@
         </button>
       </div>
     </main>
-
+ 
     <!-- RIGHT PANEL: QURAN API VERSE LOOKUP & RECITER SELECTOR -->
     <aside id="rightPanel" class="w-full lg:w-[440px] flex-1 lg:flex-none min-h-0 border-l border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900/90 backdrop-blur-md mobile-no-blur flex-col shrink-0 z-10 hidden lg:flex order-3 overflow-y-auto transition-colors duration-200">
       <div class="p-4 lg:p-5 border-b border-slate-200 dark:border-slate-800/80 flex items-center gap-2.5">
         <i class="fa-solid fa-book-open text-indigo-500 text-base"></i>
         <h2 class="text-xs lg:text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="quranApiTitle">Quran Verse & Audio Fetcher</h2>
       </div>
-
+ 
       <div class="p-5 flex flex-col gap-6">
         
         <div class="bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 lg:p-5 flex flex-col gap-3.5 shadow-inner">
@@ -314,7 +314,7 @@
             <i class="fa-solid fa-magnifying-glass text-indigo-500 text-xs"></i>
             <span data-i18n="searchVerse">Lookup Surah & Ayah</span>
           </span>
-
+ 
           <div class="grid grid-cols-2 gap-2.5">
             <div>
               <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block" data-i18n="surahLabel">Surah No.</label>
@@ -325,13 +325,13 @@
               <select id="ayahNum" onchange="syncAyahInput(this.value)" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-xs lg:text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition cursor-pointer"></select>
             </div>
           </div>
-
+ 
           <div class="flex flex-col gap-1.5">
             <label class="text-xs font-semibold text-slate-500 dark:text-slate-400" data-i18n="reciterLabel">Select Reciter (EveryAyah.com)</label>
             <select id="reciterSelect" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-xs lg:text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition cursor-pointer">
             </select>
           </div>
-
+ 
           <div class="grid grid-cols-1 gap-2 pt-1">
             <button onclick="viewAyahAndAudio()" id="fetchVerseBtn" class="w-full py-2.5 lg:py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs lg:text-sm transition flex items-center justify-center gap-2 shadow-sm">
               <i class="fa-solid fa-right-to-bracket"></i>
@@ -339,7 +339,7 @@
             </button>
           </div>
         </div>
-
+ 
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between">
             <label for="quranInput" class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="textLabel">Ayah Script Box</label>
@@ -347,11 +347,11 @@
           </div>
           <textarea id="quranInput" rows="7" dir="rtl" class="w-full bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-xl lg:text-2xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition resize-none quran-font leading-relaxed shadow-inner" placeholder="إلصق النص القرآني هنا..."></textarea>
         </div>
-
+ 
       </div>
     </aside>
   </div>
-
+ 
   <!-- RENDER PROGRESS MODAL -->
   <div id="exportModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center gap-4">
@@ -362,47 +362,47 @@
         <h3 class="font-bold text-base text-slate-900 dark:text-slate-100" data-i18n="renderingTitle">Rendering MP4 Video</h3>
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" data-i18n="renderingSub">Encoding high-bitrate video. Please keep this tab active.</p>
       </div>
-
+ 
       <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
         <div id="exportProgressBar" class="bg-indigo-500 h-full w-0 transition-all duration-150"></div>
       </div>
       <span id="exportProgressText" class="text-xs font-mono font-bold text-indigo-400">0%</span>
-
+ 
       <button onclick="cancelExportProcess()" class="mt-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-semibold text-xs transition flex items-center gap-2">
         <i class="fa-solid fa-xmark"></i>
         <span data-i18n="cancelExport">Cancel Export</span>
       </button>
     </div>
   </div>
-
+ 
   <!-- DONATE / SUPPORT MODAL -->
   <div id="donateModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center gap-5 relative transition-colors duration-200">
-
+ 
       <button onclick="closeDonateModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
         <i class="fa-solid fa-xmark"></i>
       </button>
-
+ 
       <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-600 via-violet-600 to-indigo-500 border border-indigo-400/30 flex items-center justify-center text-white text-2xl shadow-lg shadow-indigo-500/25">
         <i class="fa-solid fa-coins"></i>
       </div>
-
+ 
       <div>
         <h3 class="font-bold text-base text-slate-900 dark:text-slate-100" data-i18n="donateTitle">Support &amp; Connect</h3>
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" data-i18n="donateSub">Thank you for considering supporting the cause and following along.</p>
       </div>
-
+ 
       <div class="w-full flex flex-col gap-2.5">
         <a href="https://matwproject.org/" target="_blank" rel="noopener noreferrer" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs lg:text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50">
           <i class="fa-solid fa-coins"></i>
           <span data-i18n="donatePalestine">Donate Palestine</span>
         </a>
-
+ 
         <a href="https://www.instagram.com/hasanjanahii" target="_blank" rel="noopener noreferrer" class="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs lg:text-sm transition flex items-center justify-center gap-2">
           <i class="fa-brands fa-instagram"></i>
           <span>Instagram</span>
         </a>
-
+ 
         <a href="https://www.youtube.com/@hasanjanahi" target="_blank" rel="noopener noreferrer" class="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs lg:text-sm transition flex items-center justify-center gap-2">
           <i class="fa-brands fa-youtube"></i>
           <span>Youtube</span>
@@ -410,7 +410,7 @@
       </div>
     </div>
   </div>
-
+ 
   <script>
     const EVERYAYAH_RECITERS = [
       { name: "Nasser Al Qatami", folder: "Nasser_Alqatami_128kbps" },
@@ -433,7 +433,7 @@
       { name: "Saad Al-Ghamdi", folder: "Ghamadi_40kbps" },
       { name: "Saood Ash-Shuraym", folder: "Shuraym_128kbps" }
     ];
-
+ 
     const SURAH_DATA = [
       {n:1,name:"Al-Fatihah",ayahs:7},{n:2,name:"Al-Baqarah",ayahs:286},{n:3,name:"Aal-E-Imran",ayahs:200},
       {n:4,name:"An-Nisa",ayahs:176},{n:5,name:"Al-Ma'idah",ayahs:120},{n:6,name:"Al-An'am",ayahs:165},
@@ -475,14 +475,14 @@
       {n:112,name:"Al-Ikhlas",ayahs:4},{n:113,name:"Al-Falaq",ayahs:5},{n:114,name:"An-Nas",ayahs:6}
     ];
     let shuffledVerses = new Set();
-
+ 
     let currentLang = 'en';
     let currentFormat = '9:16';
     let isPlaying = false;
     let animationFrameId = null;
     let audioPlaylist = [];
     let currentAudioIndex = 0;
-
+ 
     let audioCtx = null;
     let audioSourceNode = null;
     let audioDestNode = null;
@@ -492,7 +492,7 @@
     let activeRecorder = null;
     let exportAnimFrameId = null;
     let isExporting = false;
-
+ 
     const canvas = document.getElementById('videoCanvas');
     const ctx = canvas.getContext('2d');
     const quranInput = document.getElementById('quranInput');
@@ -505,7 +505,7 @@
     const lineSpacingInput = document.getElementById('lineSpacing');
     const verticalShiftInput = document.getElementById('verticalShift');
     const mobileVerticalShift = document.getElementById('mobileVerticalShift');
-
+ 
     const translations = {
       en: {
         subtitle: "Quran Video Creator",
@@ -570,7 +570,7 @@
         donatePalestine: "تبرع لفلسطين"
       }
     };
-
+ 
     function populateReciterDropdown() {
       const select = document.getElementById('reciterSelect');
       select.innerHTML = '';
@@ -582,7 +582,7 @@
         select.appendChild(opt);
       });
     }
-
+ 
     function populateSurahDropdowns(selectedSurah) {
       ['surahNum', 'mSurahNum'].forEach(id => {
         const select = document.getElementById(id);
@@ -596,7 +596,7 @@
         });
       });
     }
-
+ 
     function populateAyahDropdowns(surahNum, selectedAyah) {
       const surah = SURAH_DATA.find(s => s.n === parseInt(surahNum)) || SURAH_DATA[0];
       ['ayahNum', 'mAyahNum'].forEach(id => {
@@ -611,25 +611,25 @@
         }
       });
     }
-
+ 
     quranInput.value = "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ";
-
+ 
     function syncSurahInput(val) {
       const surahVal = parseInt(val);
       document.getElementById('surahNum').value = surahVal;
       document.getElementById('mSurahNum').value = surahVal;
       populateAyahDropdowns(surahVal, 1);
     }
-
+ 
     function syncAyahInput(val) {
       document.getElementById('surahNum').value = val;
       document.getElementById('mSurahNum').value = val;
     }
-
+ 
     const TOTAL_VERSES = SURAH_DATA.reduce((sum, s) => sum + s.ayahs, 0);
     function shuffleVerse() {
       if (shuffledVerses.size >= TOTAL_VERSES) shuffledVerses.clear();
-
+ 
       let surahNum, ayahNum, key;
       do {
         let idx = Math.floor(Math.random() * TOTAL_VERSES) + 1;
@@ -643,45 +643,45 @@
         }
         key = `${surahNum}:${ayahNum}`;
       } while (shuffledVerses.has(key));
-
+ 
       shuffledVerses.add(key);
-
+ 
       populateSurahDropdowns(surahNum);
       populateAyahDropdowns(surahNum, ayahNum);
       document.getElementById('surahNum').value = surahNum;
       document.getElementById('mSurahNum').value = surahNum;
       document.getElementById('ayahNum').value = ayahNum;
       document.getElementById('mAyahNum').value = ayahNum;
-
+ 
       viewAyahAndAudio();
     }
-
+ 
     function toggleMobileFormat() {
       const targetFormat = currentFormat === '9:16' ? '16:9' : '9:16';
       setFormat(targetFormat);
       document.getElementById('mobileFormatText').textContent = targetFormat;
     }
-
+ 
     function switchMobileView(view) {
       const viewport = document.getElementById('viewportContainer');
       const left = document.getElementById('leftPanel');
       const right = document.getElementById('rightPanel');
-
+ 
       const btnCanvas = document.getElementById('mTabCanvas');
       const btnScript = document.getElementById('mTabScript');
       const btnStyle = document.getElementById('mTabStyle');
-
+ 
       viewport.classList.add('hidden');
       left.classList.add('hidden');
       right.classList.add('hidden');
-
+ 
       const tabBase = "flex-1 py-2.5 flex items-center justify-center gap-1.5 text-slate-400 active:scale-95 active:bg-slate-800/60 transition-all duration-150";
       const tabActive = "flex-1 py-2.5 flex items-center justify-center gap-1.5 font-bold text-white bg-indigo-600 active:scale-95 transition-all duration-150";
-
+ 
       btnCanvas.className = tabBase;
       btnScript.className = tabBase;
       btnStyle.className = tabBase;
-
+ 
       if (view === 'canvas') {
         viewport.classList.remove('hidden');
         viewport.classList.add('flex');
@@ -695,21 +695,21 @@
         left.classList.add('flex');
         btnStyle.className = tabActive;
       }
-
+ 
       [viewport, left, right].forEach(el => { if (!el.classList.contains('hidden')) el.scrollTop = 0; });
     }
-
+ 
     async function viewAyahAndAudio() {
       const surahNumVal = document.getElementById('surahNum').value;
       const ayahInput = document.getElementById('ayahNum').value.trim();
       const reciterFolder = document.getElementById('reciterSelect').value;
       const btn = document.getElementById('fetchVerseBtn');
-
+ 
       if (!surahNumVal || !ayahInput) return;
-
+ 
       btn.disabled = true;
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Loading...`;
-
+ 
       try {
         if (ayahInput.includes('-')) {
           const [start, end] = ayahInput.split('-');
@@ -726,11 +726,11 @@
           if (data.verse) quranInput.value = data.verse.text_uthmani;
         }
         renderCanvas();
-
+ 
         const formattedSurah = String(surahNumVal).padStart(3, '0');
         const cleanFolder = encodeURIComponent(reciterFolder.replace(/\/$/, ''));
         const remoteUrls = [];
-
+ 
         if (ayahInput.includes('-')) {
           const [start, end] = ayahInput.split('-');
           for (let i = parseInt(start); i <= parseInt(end); i++) {
@@ -741,14 +741,14 @@
           const formattedAyah = String(ayahInput).padStart(3, '0');
           remoteUrls.push(`https://everyayah.com/data/${cleanFolder}/${formattedSurah}${formattedAyah}.mp3`);
         }
-
+ 
         audioPlaylist.forEach(url => { if (url.startsWith('blob:')) URL.revokeObjectURL(url); });
-
+ 
         audioPlaylist = [];
         currentAudioIndex = 0;
-
+ 
         await setupAudioPipeline();
-
+ 
         for (const url of remoteUrls) {
           const audioRes = await fetch(url);
           const arrayBuffer = await audioRes.arrayBuffer();
@@ -756,16 +756,16 @@
           const audioBlob = new Blob([arrayBuffer], { type: 'audio/mp3' });
           audioPlaylist.push(URL.createObjectURL(audioBlob));
         }
-
+ 
         audioElement.src = audioPlaylist[0];
-
+ 
         audioElement.onloadedmetadata = () => {
           document.getElementById('totalTime').textContent = formatTime(audioElement.duration || 0);
           document.getElementById('audioFileName').textContent = `Recitation Loaded (${audioPlaylist.length} track/s)`;
         };
-
+ 
         audioElement.load();
-
+ 
       } catch (err) {
         alert("Could not load verse audio. Please check your internet connection.");
       } finally {
@@ -773,7 +773,7 @@
         btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> <span data-i18n="btnFetchText">${translations[currentLang].btnFetchText}</span>`;
       }
     }
-
+ 
     audioElement.onended = () => {
       if (audioPlaylist.length > 1 && currentAudioIndex < audioPlaylist.length - 1) {
         currentAudioIndex++;
@@ -785,50 +785,50 @@
         document.getElementById('playIcon').className = "fa-solid fa-play ml-0.5";
       }
     };
-
+ 
     function toggleLanguage() {
       currentLang = currentLang === 'en' ? 'ar' : 'en';
       document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
       document.getElementById('langLabel').textContent = currentLang === 'en' ? 'عربي' : 'English';
-
+ 
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (translations[currentLang][key]) el.textContent = translations[currentLang][key];
       });
     }
-
+ 
     function toggleTheme() {
       document.documentElement.classList.toggle('dark');
     }
-
+ 
     function fitCanvasSize() {
       const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
       const ratioW = currentFormat === '9:16' ? 9 : 16;
       const ratioH = currentFormat === '9:16' ? 16 : 9;
       const viewportH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
       const viewportW = window.visualViewport ? window.visualViewport.width : window.innerWidth;
-
+ 
       const maxW = isDesktop ? viewportW * 0.80 : viewportW * 0.94;
       const maxH = isDesktop ? viewportH * 0.60 : viewportH * 0.66;
-
+ 
       let w = maxW;
       let h = w * (ratioH / ratioW);
       if (h > maxH) {
         h = maxH;
         w = h * (ratioW / ratioH);
       }
-
+ 
       canvas.style.width = `${Math.round(w)}px`;
       canvas.style.height = `${Math.round(h)}px`;
     }
     window.addEventListener('resize', fitCanvasSize);
     window.addEventListener('orientationchange', fitCanvasSize);
-
+ 
     function setFormat(format) {
       currentFormat = format;
       const btn916 = document.getElementById('btn916');
       const btn169 = document.getElementById('btn169');
-
+ 
       if (format === '9:16') {
         canvas.width = 1080;
         canvas.height = 1920;
@@ -845,12 +845,12 @@
       fitCanvasSize();
       renderCanvas();
     }
-
+ 
     function wrapText(context, text, x, y, maxWidth, lineHeight, offsetY) {
       const words = text.split(' ');
       let line = '';
       const lines = [];
-
+ 
       for (let n = 0; n < words.length; n++) {
         const testLine = line + words[n] + ' ';
         const metrics = context.measureText(testLine);
@@ -862,79 +862,79 @@
         }
       }
       lines.push(line);
-
+ 
       const totalHeight = lines.length * lineHeight;
       let startY = (y + offsetY) - (totalHeight / 2) + (lineHeight / 2);
-
+ 
       for (let k = 0; k < lines.length; k++) {
         context.fillText(lines[k].trim(), x, startY + (k * lineHeight));
       }
     }
-
+ 
     function renderCanvas() {
       ctx.fillStyle = bgColorInput.value;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+ 
       const text = quranInput.value.trim();
       if (text) {
         const size = parseInt(fontSizeInput.value, 10);
         const spacingMultiplier = parseFloat(lineSpacingInput.value);
         const shiftY = parseInt(verticalShiftInput.value, 10);
-
+ 
         ctx.font = `${size}px "Amiri Quran", "Amiri", serif`;
         ctx.fillStyle = textColorInput.value;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-
+ 
         const padding = currentFormat === '9:16' ? 140 : 260;
         const maxWidth = canvas.width - (padding * 2);
         const lineHeight = size * spacingMultiplier;
-
+ 
         wrapText(ctx, text, canvas.width / 2, canvas.height / 2, maxWidth, lineHeight, shiftY);
       }
     }
-
+ 
     bgColorInput.addEventListener('input', (e) => {
       document.getElementById('bgColorVal').textContent = e.target.value.toUpperCase();
       renderCanvas();
     });
-
+ 
     textColorInput.addEventListener('input', (e) => {
       document.getElementById('textColorVal').textContent = e.target.value.toUpperCase();
       renderCanvas();
     });
-
+ 
     fontSizeInput.addEventListener('input', (e) => {
       document.getElementById('fontSizeVal').textContent = `${e.target.value}px`;
       mobileFontSize.value = e.target.value;
       renderCanvas();
     });
-
+ 
     mobileFontSize.addEventListener('input', (e) => {
       fontSizeInput.value = e.target.value;
       document.getElementById('fontSizeVal').textContent = `${e.target.value}px`;
       renderCanvas();
     });
-
+ 
     lineSpacingInput.addEventListener('input', (e) => {
       document.getElementById('lineSpacingVal').textContent = `${parseFloat(e.target.value).toFixed(2)}x`;
       renderCanvas();
     });
-
+ 
     verticalShiftInput.addEventListener('input', (e) => {
       document.getElementById('verticalShiftVal').textContent = `${e.target.value}px`;
       mobileVerticalShift.value = e.target.value;
       renderCanvas();
     });
-
+ 
     mobileVerticalShift.addEventListener('input', (e) => {
       verticalShiftInput.value = e.target.value;
       document.getElementById('verticalShiftVal').textContent = `${e.target.value}px`;
       renderCanvas();
     });
-
+ 
     quranInput.addEventListener('input', renderCanvas);
-
+ 
     audioUpload.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -943,7 +943,7 @@
         
         const arrayBuffer = await file.arrayBuffer();
         await audioCtx.decodeAudioData(arrayBuffer.slice(0));
-
+ 
         audioElement.src = URL.createObjectURL(file);
         document.getElementById('audioFileName').textContent = file.name;
         audioElement.onloadedmetadata = () => {
@@ -952,7 +952,7 @@
         audioElement.load();
       }
     });
-
+ 
     async function togglePlay() {
       const playIcon = document.getElementById('playIcon');
       if (isPlaying) {
@@ -969,7 +969,7 @@
         drawLoop();
       }
     }
-
+ 
     function drawLoop() {
       if (!isPlaying) return;
       renderCanvas();
@@ -978,14 +978,14 @@
       }
       animationFrameId = requestAnimationFrame(drawLoop);
     }
-
+ 
     function formatTime(seconds) {
       if (isNaN(seconds)) return "00:00";
       const mins = Math.floor(seconds / 60);
       const secs = Math.floor(seconds % 60);
       return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
-
+ 
     async function setupAudioPipeline() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1002,8 +1002,20 @@
         await audioCtx.resume();
       }
     }
-
+ 
     async function startExportProcess() {
+      // If the preview is currently playing, stop it first so its render/timer
+      // loop doesn't keep running alongside the export (this was causing the
+      // audio to be seeked/cut right at the start of the export, and left the
+      // preview timer frozen afterward).
+      if (isPlaying) {
+        audioElement.pause();
+        isPlaying = false;
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        const previewPlayIcon = document.getElementById('playIcon');
+        if (previewPlayIcon) previewPlayIcon.className = "fa-solid fa-play ml-0.5";
+      }
+ 
       const modal = document.getElementById('exportModal');
       const progressBar = document.getElementById('exportProgressBar');
       const progressText = document.getElementById('exportProgressText');
@@ -1012,15 +1024,15 @@
       progressBar.style.width = '0%';
       progressText.textContent = '0%';
       isExporting = true;
-
+ 
       const duration = audioElement.duration && !isNaN(audioElement.duration) ? audioElement.duration : 5.0;
-
+ 
       const canvasStream = canvas.captureStream(0);
       const videoTrack = canvasStream.getVideoTracks()[0];
       const outputStream = new MediaStream();
-
+ 
       canvasStream.getVideoTracks().forEach(track => outputStream.addTrack(track));
-
+ 
       if (audioElement.src) {
         try {
           await setupAudioPipeline();
@@ -1033,7 +1045,7 @@
           console.warn("Audio pipeline capture error:", err);
         }
       }
-
+ 
       let mimeType = 'video/mp4;codecs=avc1.42E01E,mp4a.40.2';
       if (!MediaRecorder.isTypeSupported(mimeType)) {
         mimeType = 'video/mp4';
@@ -1041,10 +1053,10 @@
       if (!MediaRecorder.isTypeSupported(mimeType)) {
         mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8') ? 'video/webm;codecs=vp8' : 'video/webm';
       }
-
+ 
       activeRecorder = new MediaRecorder(outputStream, { mimeType, videoBitsPerSecond: 4000000 });
       const chunks = [];
-
+ 
       activeRecorder.ondataavailable = e => chunks.push(e.data);
       activeRecorder.onstop = () => {
         if (!isExporting) return;
@@ -1055,72 +1067,102 @@
         a.download = `GetAjr_Quran_Video_${Date.now()}.mp4`;
         a.click();
         URL.revokeObjectURL(url);
-
+ 
         if (monitorGainNode) monitorGainNode.gain.value = 1;
-
+ 
+        // Reset playback position so the preview timer isn't left stuck at
+        // the end of the track (and doesn't appear to "not move") next time.
+        if (audioElement.src) {
+          audioElement.currentTime = 0;
+          document.getElementById('currentTime').textContent = formatTime(0);
+        }
+        isPlaying = false;
+        const finishedPlayIcon = document.getElementById('playIcon');
+        if (finishedPlayIcon) finishedPlayIcon.className = "fa-solid fa-play ml-0.5";
+ 
         modal.classList.add('hidden');
         isExporting = false;
       };
-
+ 
       if (audioElement.src) {
         audioElement.currentTime = 0;
       }
-
+ 
       // Start recorder first to prepare encoder buffers
       activeRecorder.start(100);
-
+ 
+      // Immediately seed a real video frame the instant recording begins, so the
+      // very start of the file isn't blank/frozen while waiting for the first
+      // animation-frame callback later (this was causing the cut at the start).
+      renderCanvas();
+      videoTrack.requestFrame();
+ 
       // Short 150ms priming delay before starting audio playback to avoid first-second drop
       await new Promise(resolve => setTimeout(resolve, 150));
-
+ 
       if (audioElement.src && isExporting) {
         await audioElement.play();
       }
-
+ 
       const startTime = performance.now();
       const exportLoop = () => {
         if (!isExporting) return;
-
+ 
         const elapsed = (performance.now() - startTime) / 1000;
         const progress = Math.min(Math.round((elapsed / duration) * 100), 100);
-
+ 
         progressBar.style.width = `${progress}%`;
         progressText.textContent = `${progress}%`;
         renderCanvas();
         videoTrack.requestFrame();
-
-        if (elapsed >= (duration + 0.2)) {
+ 
+        if (elapsed >= (duration + 0.35)) {
+          // Capture one last frame at the true final position before stopping.
+          renderCanvas();
+          videoTrack.requestFrame();
           if (audioElement.src) audioElement.pause();
-          if (activeRecorder && activeRecorder.state !== 'inactive') {
-            activeRecorder.stop();
-          }
+          // Give the recorder a brief moment to flush its trailing audio/video
+          // buffers before stopping, so the last fraction of a second isn't cut.
+          setTimeout(() => {
+            if (activeRecorder && activeRecorder.state !== 'inactive') {
+              activeRecorder.stop();
+            }
+          }, 250);
           return;
         }
         exportAnimFrameId = requestAnimationFrame(exportLoop);
       };
       exportAnimFrameId = requestAnimationFrame(exportLoop);
     }
-
+ 
     function openDonateModal() {
       document.getElementById('donateModal').classList.remove('hidden');
     }
-
+ 
     function closeDonateModal() {
       document.getElementById('donateModal').classList.add('hidden');
     }
-
+ 
     function cancelExportProcess() {
       isExporting = false;
       if (exportAnimFrameId) cancelAnimationFrame(exportAnimFrameId);
       if (activeRecorder && activeRecorder.state !== 'inactive') {
         activeRecorder.stop();
       }
-      if (audioElement.src) audioElement.pause();
+      if (audioElement.src) {
+        audioElement.pause();
+        audioElement.currentTime = 0;
+        document.getElementById('currentTime').textContent = formatTime(0);
+      }
       if (monitorGainNode) monitorGainNode.gain.value = 1;
-
+      isPlaying = false;
+      const cancelledPlayIcon = document.getElementById('playIcon');
+      if (cancelledPlayIcon) cancelledPlayIcon.className = "fa-solid fa-play ml-0.5";
+ 
       const modal = document.getElementById('exportModal');
       modal.classList.add('hidden');
     }
-
+ 
     populateReciterDropdown();
     populateSurahDropdowns(2);
     populateAyahDropdowns(2, 255);
@@ -1129,3 +1171,5 @@
   </script>
 </body>
 </html>
+ 
+
