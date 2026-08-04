@@ -409,8 +409,8 @@
         <i class="fa-solid fa-circle-notch fa-spin"></i>
       </div>
       <div>
-        <h3 id="exportStatusTitle" class="font-bold text-base text-slate-900 dark:text-slate-100" data-i18n="renderingTitle">Rendering Video</h3>
-        <p id="exportStatusSub" class="text-xs text-slate-500 dark:text-slate-400 mt-1" data-i18n="renderingSub">Encoding high-bitrate video. Please keep this tab active.</p>
+        <h3 class="font-bold text-base text-slate-900 dark:text-slate-100" data-i18n="renderingTitle">Rendering Video</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" data-i18n="renderingSub">Encoding high-bitrate video. Please keep this tab active.</p>
       </div>
 
       <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
@@ -551,8 +551,6 @@
     let activeRecorder = null;
     let exportAnimFrameId = null;
     let isExporting = false;
-    let ffmpegInstance = null;
-    let ffmpegLoadingPromise = null;
 
     // DOM Elements
     const canvas = document.getElementById('videoCanvas');
@@ -595,8 +593,6 @@
         tabScript: "Script & Audio",
         renderingTitle: "Rendering Video...",
         renderingSub: "Encoding high-bitrate video. Please keep this tab active.",
-        convertingTitle: "Converting to MP4...",
-        convertingSub: "Finishing up the file so it plays everywhere. This can take a moment.",
         cancelExport: "Cancel Export",
         donate: "Donate",
         donateTitle: "Support & Connect",
@@ -628,8 +624,6 @@
         tabScript: "النص والصوت",
         renderingTitle: "جاري تصدير الفيديو...",
         renderingSub: "يتم إنشاء الفيديو بأعلى جودة. يرجى الانتظار.",
-        convertingTitle: "جاري التحويل إلى MP4...",
-        convertingSub: "يتم إنهاء الملف ليعمل في كل مكان. قد يستغرق هذا لحظة.",
         cancelExport: "إلغاء التصدير",
         donate: "تبرع",
         donateTitle: "الدعم والتواصل",
@@ -1148,75 +1142,14 @@
       }
     }
 
-    // ---- MP4 conversion (ffmpeg.wasm), used only as a fallback for
-    // browsers whose MediaRecorder can't record MP4 natively ----
-    function loadScriptOnce(src) {
-      return new Promise((resolve, reject) => {
-        const existing = document.querySelector(`script[src="${src}"]`);
-        if (existing) { existing.addEventListener('load', resolve); if (existing.dataset.loaded) resolve(); return; }
-        const s = document.createElement('script');
-        s.src = src;
-        s.onload = () => { s.dataset.loaded = 'true'; resolve(); };
-        s.onerror = () => reject(new Error(`Failed to load ${src}`));
-        document.head.appendChild(s);
-      });
-    }
- 
-    async function getFFmpeg() {
-      if (ffmpegInstance) return ffmpegInstance;
-      if (!ffmpegLoadingPromise) {
-        ffmpegLoadingPromise = (async () => {
-          if (!window.FFmpeg) {
-            await loadScriptOnce('https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js');
-          }
-          const { createFFmpeg } = window.FFmpeg;
-          const instance = createFFmpeg({
-            log: false,
-            corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'
-          });
-          await instance.load();
-          ffmpegInstance = instance;
-          return instance;
-        })();
-      }
-      return ffmpegLoadingPromise;
-    }
- 
-    // Re-encodes a recorded WebM (VP8/VP9 + Opus) blob into a standard
-    // H.264/AAC MP4 entirely client-side, so browsers that can't record
-    // MP4 directly (most desktop Chrome/Firefox) still produce a real,
-    // universally-playable .mp4 download.
-    async function convertWebmToMp4(webmBlob, onProgress) {
-      const ffmpeg = await getFFmpeg();
-      const { fetchFile } = window.FFmpeg;
-      ffmpeg.setProgress(({ ratio }) => {
-        if (typeof ratio === 'number' && ratio >= 0 && ratio <= 1) onProgress(Math.round(ratio * 100));
-      });
-      ffmpeg.FS('writeFile', 'input.webm', await fetchFile(webmBlob));
-      await ffmpeg.run(
-        '-i', 'input.webm',
-        '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p',
-        '-c:a', 'aac', '-b:a', '192k',
-        '-movflags', '+faststart',
-        'output.mp4'
-      );
-      const data = ffmpeg.FS('readFile', 'output.mp4');
-      try { ffmpeg.FS('unlink', 'input.webm'); ffmpeg.FS('unlink', 'output.mp4'); } catch (e) {}
-      return new Blob([data.buffer], { type: 'video/mp4' });
-    }
- 
     async function startExportProcess() {
       const modal = document.getElementById('exportModal');
       const progressBar = document.getElementById('exportProgressBar');
       const progressText = document.getElementById('exportProgressText');
-      const statusTitle = document.getElementById('exportStatusTitle');
-      const statusSub = document.getElementById('exportStatusSub');
-
+      
       modal.classList.remove('hidden');
       progressBar.style.width = '0%';
       progressText.textContent = '0%';
-      statusTitle.textContent = translations[currentLang].renderingTitle;
-      statusSub.textContent = translations[currentLang].renderingSub;
       isExporting = true;
 
       const duration = audioElement.duration && !isNaN(audioElement.duration) ? audioElement.duration : 5.0;
@@ -1241,65 +1174,48 @@
         }
       }
 
-      // Prefer recording straight to MP4 (H.264/AAC) when the browser's
-      // MediaRecorder supports it natively (Safari, and some Chromium
-      // builds) - that's instant, no extra processing needed. Otherwise
-      // fall back to WebM capture (VP8 is the cheapest software encoder
-      // at this resolution/framerate, so it's least likely to hiccup)
-      // and transcode the result to MP4 with ffmpeg.wasm right after.
-      const MP4_MIME_CANDIDATES = [
-        'video/mp4;codecs=avc1.640028,mp4a.40.2',
-        'video/mp4;codecs=h264,aac',
+      // Your canvas renders at 1080x1920 @ 30fps - VP9 software encoding
+      // at that resolution, in real time, alongside redrawing Arabic
+      // text every single frame, is genuinely heavy on the CPU. If the
+      // encoder can't keep up with incoming frames in real time, frames
+      // back up/get dropped - which is exactly what a "hiccup" looks
+      // like. VP8 is a substantially cheaper software encoder at the
+      // same resolution/framerate and is far less likely to fall behind.
+      //
+      // Prefer recording straight to MP4 (H.264 + AAC) so the download
+      // doesn't need any conversion. Chrome (recent versions) and Safari
+      // both support this natively via MediaRecorder; we fall back to
+      // WebM only on browsers that don't.
+      const mp4Candidates = [
+        'video/mp4;codecs=avc1,mp4a.40.2',
+        'video/mp4;codecs=avc1',
         'video/mp4'
       ];
-      let mimeType = MP4_MIME_CANDIDATES.find(m => MediaRecorder.isTypeSupported(m));
-      let needsConversion = false;
+      let mimeType = mp4Candidates.find(t => MediaRecorder.isTypeSupported(t)) || null;
+      let fileExt = 'mp4';
       if (!mimeType) {
-        needsConversion = true;
         mimeType = 'video/webm;codecs=vp8';
         if (!MediaRecorder.isTypeSupported(mimeType)) {
           mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
         }
+        fileExt = 'webm';
       }
 
       activeRecorder = new MediaRecorder(outputStream, { mimeType, videoBitsPerSecond: 4000000 });
       const chunks = [];
 
       activeRecorder.ondataavailable = e => chunks.push(e.data);
-      activeRecorder.onstop = async () => {
+      activeRecorder.onstop = () => {
         if (!isExporting) return;
-        const recordedBlob = new Blob(chunks, { type: mimeType });
-
-        if (monitorGainNode) monitorGainNode.gain.value = 1;
-
-        let finalBlob = recordedBlob;
-        let extension = 'mp4';
-
-        if (needsConversion) {
-          try {
-            statusTitle.textContent = translations[currentLang].convertingTitle;
-            statusSub.textContent = translations[currentLang].convertingSub;
-            progressBar.style.width = '0%';
-            progressText.textContent = '0%';
-            finalBlob = await convertWebmToMp4(recordedBlob, (pct) => {
-              progressBar.style.width = `${pct}%`;
-              progressText.textContent = `${pct}%`;
-            });
-          } catch (err) {
-            console.warn("MP4 conversion failed, downloading WebM instead:", err);
-            finalBlob = recordedBlob;
-            extension = 'webm';
-          }
-        }
-
-        if (!isExporting) return; // cancelled while converting
-
-        const url = URL.createObjectURL(finalBlob);
+        const blob = new Blob(chunks, { type: mimeType });
+        const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `GetAjr_Export_${Date.now()}.${extension}`;
+        a.download = `GetAjr_Export_${Date.now()}.${fileExt}`;
         a.click();
         URL.revokeObjectURL(url);
+
+        if (monitorGainNode) monitorGainNode.gain.value = 1;
 
         modal.classList.add('hidden');
         isExporting = false;
@@ -1309,11 +1225,24 @@
         audioElement.currentTime = 0;
       }
 
-      // Start recording and playback together - the same simple,
-      // un-delayed sequence togglePlay() already uses successfully.
-      // No artificial waits, no gain fades: the pipeline is already
-      // warm, so this is exactly as smooth as pressing Play.
+      // Start recording, then PRIME the encoder with a couple of throwaway
+      // frames before playback begins. Both the video encoder and the
+      // audio track need a brief moment to actually start flowing data
+      // after start()/play() are called - if real content begins during
+      // that moment, the first ~1s of the muxed file ends up thin or
+      // misaligned between audio and video, which plays back as a cut or
+      // lag right at the start (most visible on desktop, where the VP8/
+      // H.264 encoder has more work to do per frame). Priming "absorbs"
+      // that startup cost on frames nobody sees, so the real content
+      // starts on an already-warm pipeline.
       activeRecorder.start();
+      renderCanvas();
+      videoTrack.requestFrame();
+      await new Promise(r => requestAnimationFrame(r));
+      renderCanvas();
+      videoTrack.requestFrame();
+      await new Promise(r => requestAnimationFrame(r));
+
       if (audioElement.src) {
         await audioElement.play();
       }
@@ -1366,14 +1295,6 @@
       }
       if (audioElement.src) audioElement.pause();
       if (monitorGainNode) monitorGainNode.gain.value = 1;
-
-      // If an MP4 conversion is mid-flight, kill the ffmpeg worker so it
-      // stops burning CPU; it'll simply reload next time it's needed.
-      if (ffmpegInstance) {
-        try { ffmpegInstance.exit(); } catch (e) {}
-        ffmpegInstance = null;
-        ffmpegLoadingPromise = null;
-      }
 
       const modal = document.getElementById('exportModal');
       modal.classList.add('hidden');
