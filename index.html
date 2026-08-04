@@ -1089,7 +1089,11 @@
       }
  
       // Start recorder first to prepare encoder buffers
-      activeRecorder.start(100);
+      // (no timeslice: forces the browser to finalize the file as one complete
+      // take on stop(), instead of writing it out as streamed fragments —
+      // fragmented output is what leaves the duration/time missing for
+      // desktop video players.)
+      activeRecorder.start();
  
       // Immediately seed a real video frame the instant recording begins, so the
       // very start of the file isn't blank/frozen while waiting for the first
