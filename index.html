@@ -1,400 +1,1284 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr" class="">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dhikr Screen</title>
-    
-    <!-- Favicon: Dark Mode background with Purple Desktop Computer SVG -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b0f19'/%3E%3Crect x='10' y='12' width='44' height='28' rx='4' fill='%238b5cf6'/%3E%3Crect x='13' y='15' width='38' height='22' rx='2' fill='%230b0f19'/%3E%3Crect x='28' y='40' width='8' height='8' fill='%23a855f7'/%3E%3Crect x='20' y='48' width='24' height='4' rx='2' fill='%23a855f7'/%3E%3C/svg%3E">
-
-    <!-- Google Fonts: Amiri Quran (for thick, clear calligraphic Tashkeel) & Tajawal (for UI) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Tajawal:wght@500;700&display=swap" rel="stylesheet">
-
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>GetAjr - Quran Video Editor</title>
+  <!-- Modern Clapperboard Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%234f46e5'/><stop offset='50%' stop-color='%237c3aed'/><stop offset='100%' stop-color='%236366f1'/></linearGradient></defs><rect width='100' height='100' rx='25' fill='url(%23g)'/><path d='M25 30 h50 a 5 5 0 0 1 5 5 v30 a 5 5 0 0 1 -5 5 h-50 a 5 5 0 0 1 -5 -5 v-30 a 5 5 0 0 1 5 -5 z' fill='none' stroke='white' stroke-width='6'/><path d='M20 42 h60 M35 30 l10 12 M55 30 l10 12' stroke='white' stroke-width='5' stroke-linecap='round'/></svg>">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+            slatebg: '#090d16',
+            panelbg: '#0f172a',
+            cardbg: '#1e293b'
+          }
         }
-
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: #0b0f19; /* Deep dark background */
-            color: #e2e8f0;            /* Soft off-white to prevent glare */
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            direction: rtl;
-        }
-
-        /* Container - shifted upward for optimal framing */
-        .dhikr-container {
-            text-align: center;
-            padding: 20px;
-            width: 90%;
-            max-width: 1000px;
-            transform: translateY(-6vh); 
-        }
-
-        /* Amiri Quran font with high-contrast diacritics */
-        .dhikr-text {
-            font-family: 'Amiri Quran', serif;
-            font-size: clamp(3rem, 7.5vw, 6.5rem);
-            font-weight: 400;
-            line-height: 1.6;
-            opacity: 1;
-            transition: opacity 0.35s ease-in-out;
-
-            /* Hardware acceleration for crisp mobile rendering */
-            will-change: opacity;
-            transform: translateZ(0);
-            -webkit-font-smoothing: antialiased;
-            text-rendering: optimizeLegibility;
-        }
-
-        .dhikr-text.fade {
-            opacity: 0;
-        }
-
-        /* Centered Bottom Footer Wrapper */
-        .bottom-bar {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            direction: ltr;
-            z-index: 10;
-        }
-
-        /* Shared Style for Bottom Labels (Donate & Fullscreen) */
-        .website-label {
-            font-family: 'Tajawal', system-ui, -apple-system, sans-serif;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #64748b;         
-            letter-spacing: 1px;
-            cursor: pointer;
-            opacity: 0.85;          
-            transition: opacity 0.25s ease, color 0.25s ease, background 0.25s ease;
-            user-select: none;
-            direction: ltr;
-            padding: 8px 16px;
-            border-radius: 20px;
-            background: transparent;
-            border: none;
-            outline: none;
-        }
-
-        .website-label:hover, .website-label:active {
-            opacity: 1;
-            color: #f1f5f9;         
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        /* Strictly hide Fullscreen button on mobile / touch devices */
-        @media (hover: none), (pointer: coarse), (max-width: 768px) {
-            .fullscreen-btn {
-                display: none !important;
-            }
-        }
-
-        /* --- RESPONSIVE MODAL POPUP --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(11, 15, 25, 0.85);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            z-index: 1000;
-            padding: 20px;
-            direction: ltr;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-card {
-            background: #111827;
-            border: 1px solid #1f2937;
-            width: 100%;
-            max-width: 420px;
-            max-height: 85vh;
-            overflow-y: auto;
-            border-radius: 24px;
-            padding: 28px 24px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
-            transform: scale(0.95) translateY(10px);
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            text-align: center;
-            position: relative;
-
-            -webkit-overflow-scrolling: touch;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        .modal-card::-webkit-scrollbar {
-            display: none;
-        }
-
-        .modal-overlay.active .modal-card {
-            transform: scale(1) translateY(0);
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            background: #1f2937;
-            border: none;
-            color: #9ca3af;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            font-size: 1.2rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s ease, color 0.2s ease;
-        }
-
-        .modal-close:hover {
-            background: #374151;
-            color: #fff;
-        }
-
-        .modal-icon {
-            width: 52px;
-            height: 52px;
-            background: rgba(139, 92, 246, 0.15);
-            border-radius: 16px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 16px;
-        }
-
-        .modal-icon svg {
-            width: 28px;
-            height: 28px;
-        }
-
-        .modal-desc {
-            font-size: 0.92rem;
-            color: #9ca3af;
-            line-height: 1.6;
-            margin-bottom: 24px;
-        }
-
-        .modal-desc p {
-            margin-bottom: 8px;
-        }
-
-        /* Buttons Stack */
-        .donate-links {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .donate-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 14px 20px;
-            border-radius: 14px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            text-decoration: none;
-            background: #1f2937;
-            color: #e5e7eb;
-            border: 1px solid #374151;
-            transition: all 0.25s ease;
-        }
-
-        .donate-btn:hover, .donate-btn:active {
-            background: #8b5cf6;
-            color: #ffffff;
-            border-color: #8b5cf6;
-            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
-            transform: translateY(-2px);
-        }
-    </style>
+      }
+    }
+  </script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Arabic & UI Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Amiri+Quran&family=Noto+Naskh+Arabic:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    html {
+      /* Fallback for browsers without dvh, then upgrade. Prevents the
+         classic mobile bug where 100vh is taller than the *visible*
+         viewport once the browser's address bar is on screen, which
+         pushes the bottom of the page out of reach and makes it look
+         like scrolling is broken/clipped. */
+      height: 100vh;
+      height: 100dvh;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', 'Noto Naskh Arabic', sans-serif;
+      touch-action: manipulation;
+      height: 100vh;
+      height: 100dvh;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .quran-font {
+      font-family: 'Amiri Quran', 'Amiri', serif;
+    }
+    /* Smooth mobile scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.3);
+      border-radius: 4px;
+    }
+    /* Smooth, non-laggy scrolling on mobile: momentum scroll + prevent
+       scroll-chaining/rubber-band from bleeding into sibling elements
+       (this is what caused touches on the top bar to feel delayed while
+       scrolling elsewhere on the page). */
+    #leftPanel, #rightPanel, #viewportContainer {
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      scroll-behavior: smooth;
+    }
+    /* THE ACTUAL SCROLL FIX: these three panes each rely on their own
+       overflow-y-auto to scroll, but as flex children their default
+       min-height is "auto" (= their content's natural height), so a
+       tall panel just gets clipped by the parent's overflow-hidden
+       instead of scrolling internally. min-height:0 lets each panel
+       size to the space it's actually given, which is what makes its
+       own overflow-y-auto kick in. */
+    #mainContainer, #leftPanel, #rightPanel, #viewportContainer {
+      min-height: 0;
+    }
+    /* Safe-area padding so content never sits under a notch / home
+       indicator / rounded corners on modern phones. */
+    header {
+      /* Extra top padding so the header's own content (logo/buttons)
+         never sits under a phone status bar / camera cutout. iOS
+         reports env(safe-area-inset-top) reliably; many Android
+         browsers report 0 even when content is drawn edge-to-edge, so
+         we also guarantee a sensible minimum instead of relying on
+         env() alone. */
+      padding-top: max(0.75rem, env(safe-area-inset-top));
+    }
+    @supports (padding: max(0px)) {
+      #mainContainer {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+    }
+    /* backdrop-filter: blur is expensive to keep recompositing on mobile
+       GPUs, especially under scroll and next to the pulsing dot / live
+       canvas redraws. It's restored on desktop (lg) below. */
+    @media (max-width: 1023px) {
+      .mobile-no-blur {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+      }
+    }
+    /* Canvas preview box sizing, written as plain CSS (not a Tailwind
+       utility class) so the 9:16 / 16:9 shape is never at the mercy of
+       the Tailwind CDN's in-browser class compiler. The #id selector
+       also out-specifies any conflicting utility class. */
+    #videoCanvas {
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-slate-950 text-slate-100 dark:bg-slate-950 dark:text-slate-100 flex flex-col overflow-y-auto transition-colors duration-200" style="height:100vh;height:100dvh;">
 
-    <main class="dhikr-container">
-        <div class="dhikr-text" id="dhikrDisplay">سُبْحَانَ اللَّهِ</div>
+  <!-- TOP APP BAR -->
+  <header class="min-h-[3.75rem] lg:min-h-16 border-b border-slate-200 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 px-2.5 lg:px-6 flex items-center justify-between z-20 shrink-0 backdrop-blur-md mobile-no-blur transition-colors duration-200 gap-2">
+    <div class="flex items-center gap-2 lg:gap-3 min-w-0">
+      <div class="w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-indigo-500 border border-indigo-400/30 flex items-center justify-center text-white font-black text-base lg:text-lg shadow-lg shadow-indigo-500/25 shrink-0">
+        <i class="fa-solid fa-clapperboard text-sm lg:text-base"></i>
+      </div>
+      <div class="min-w-0">
+        <h1 class="font-extrabold text-lg lg:text-xl tracking-tight text-slate-900 dark:text-slate-100 leading-tight truncate">GetAjr</h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block truncate" data-i18n="subtitle">Quran Video Creator</p>
+      </div>
+    </div>
+
+    <!-- Controls & Toggles -->
+    <div class="flex items-center gap-1 lg:gap-3 shrink-0">
+      <button id="langToggleBtn" onclick="toggleLanguage()" class="w-9 h-9 lg:w-auto lg:h-auto lg:px-3.5 lg:py-2 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-semibold text-slate-700 dark:text-slate-300 transition flex items-center justify-center lg:gap-2 shrink-0" title="Toggle Language">
+        <i class="fa-solid fa-globe text-indigo-500 text-base lg:text-sm"></i>
+        <span id="langLabel" class="hidden lg:inline">عربي</span>
+      </button>
+
+      <button onclick="toggleTheme()" class="w-9 h-9 lg:w-auto lg:h-auto lg:p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition flex items-center justify-center shrink-0" title="Toggle Light/Dark Theme">
+        <i class="fa-solid fa-sun hidden dark:block text-amber-400 text-base lg:text-base"></i>
+        <i class="fa-solid fa-moon block dark:hidden text-base lg:text-base"></i>
+      </button>
+
+      <div class="h-5 lg:h-6 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 shrink-0"></div>
+
+      <button id="exportBtn" onclick="startExportProcess()" class="w-9 h-9 lg:w-auto lg:h-auto px-0 lg:px-5 py-0 lg:py-2.5 rounded-lg lg:rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition flex items-center justify-center lg:gap-2 shadow-lg shadow-indigo-950/50 shrink-0" title="Export">
+        <i class="fa-solid fa-download text-base lg:text-sm"></i>
+        <span data-i18n="export" class="hidden lg:inline">Export</span>
+      </button>
+
+      <button id="donateBtn" onclick="openDonateModal()" class="w-9 h-9 lg:w-auto lg:h-auto px-0 lg:px-5 py-0 lg:py-2.5 rounded-lg lg:rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition flex items-center justify-center lg:gap-2 shadow-lg shadow-indigo-950/50 shrink-0" title="Donate">
+        <i class="fa-solid fa-coins text-base lg:text-sm"></i>
+        <span data-i18n="donate" class="hidden lg:inline">Donate</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MOBILE NAVIGATION TABS -->
+  <div class="lg:hidden flex border-b border-slate-800/80 bg-slate-900/95 text-xs font-semibold shrink-0 shadow-sm backdrop-blur-md mobile-no-blur">
+    <button onclick="switchMobileView('canvas')" id="mTabCanvas" class="flex-1 py-2.5 flex items-center justify-center gap-1.5 font-bold text-white bg-indigo-600 active:scale-95 transition-all duration-150">
+      <i class="fa-solid fa-display text-xs"></i> <span data-i18n="tabPreview">Studio</span>
+    </button>
+    <button onclick="switchMobileView('script')" id="mTabScript" class="flex-1 py-2.5 flex items-center justify-center gap-1.5 text-slate-400 active:scale-95 active:bg-slate-800/60 transition-all duration-150">
+      <i class="fa-solid fa-book-open text-xs"></i> <span data-i18n="tabScript">Script & Audio</span>
+    </button>
+    <button onclick="switchMobileView('style')" id="mTabStyle" class="flex-1 py-2.5 flex items-center justify-center gap-1.5 text-slate-400 active:scale-95 active:bg-slate-800/60 transition-all duration-150">
+      <i class="fa-solid fa-sliders text-xs"></i> <span>Full Style</span>
+    </button>
+  </div>
+
+  <!-- MAIN PROFESSIONAL EDITOR CONTAINER -->
+  <div id="mainContainer" class="flex-1 flex overflow-hidden flex-col lg:flex-row relative">
+    
+    <!-- LEFT PANEL: CANVAS & VISUALS (Desktop Sidebar / Mobile Tab) -->
+    <aside id="leftPanel" class="w-full lg:w-[380px] flex-1 lg:flex-none min-h-0 border-r border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900/90 backdrop-blur-md mobile-no-blur flex-col shrink-0 z-10 hidden lg:flex order-2 lg:order-1 overflow-y-auto transition-colors duration-200">
+      <div class="p-4 lg:p-5 border-b border-slate-200 dark:border-slate-800/80 flex items-center gap-2.5">
+        <i class="fa-solid fa-palette text-indigo-500 text-base"></i>
+        <h2 class="text-xs lg:text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="styleTitle">Canvas & Visuals</h2>
+      </div>
+
+      <div class="p-5 flex flex-col gap-6">
+        <!-- Canvas Aspect Ratio -->
+        <div class="flex flex-col gap-2.5">
+          <label class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="formatLabel">Video Dimensions</label>
+          <div class="grid grid-cols-2 gap-2.5">
+            <button id="btn916" onclick="setFormat('9:16')" class="py-3 px-3 rounded-xl bg-slate-800 text-indigo-400 border border-slate-700 font-semibold text-xs lg:text-sm flex flex-col items-center gap-1.5 transition shadow-sm">
+              <i class="fa-solid fa-mobile-screen text-base lg:text-lg"></i>
+              <span>Reel (9:16)</span>
+            </button>
+            <button id="btn169" onclick="setFormat('16:9')" class="py-3 px-3 rounded-xl bg-slate-100 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-xs lg:text-sm flex flex-col items-center gap-1.5 transition">
+              <i class="fa-solid fa-display text-base lg:text-lg"></i>
+              <span>Video (16:9)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Color Customization -->
+        <div class="flex flex-col gap-3 pt-3 border-t border-slate-200 dark:border-slate-800/80">
+          <label class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="colorsLabel">Canvas Palette</label>
+          
+          <div class="grid grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1.5">
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400" data-i18n="bgColor">Background</span>
+              <div class="flex items-center gap-2 border border-slate-200 dark:border-slate-800 p-2 rounded-xl bg-slate-50 dark:bg-slate-950/60">
+                <input type="color" id="bgColor" value="#000000" class="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent">
+                <span id="bgColorVal" class="text-xs lg:text-sm font-mono text-slate-600 dark:text-slate-400 uppercase">#000000</span>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <span class="text-xs font-medium text-slate-500 dark:text-slate-400" data-i18n="textColor">Text Color</span>
+              <div class="flex items-center gap-2 border border-slate-200 dark:border-slate-800 p-2 rounded-xl bg-slate-50 dark:bg-slate-950/60">
+                <input type="color" id="textColor" value="#ffffff" class="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent">
+                <span id="textColorVal" class="text-xs lg:text-sm font-mono text-slate-600 dark:text-slate-400 uppercase">#FFFFFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Text Sizing, Line Spacing & Vertical Shift Controls -->
+        <div class="flex flex-col gap-5 pt-3 border-t border-slate-200 dark:border-slate-800/80">
+          <!-- Font Size Slider -->
+          <div class="flex flex-col gap-2">
+            <div class="flex justify-between items-center">
+              <label for="fontSize" class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="fontSizeLabel">Font Size</label>
+              <span id="fontSizeVal" class="text-xs lg:text-sm font-mono font-semibold text-indigo-400 bg-slate-800 border border-slate-700 px-2.5 py-0.5 rounded-md">64px</span>
+            </div>
+            <input type="range" id="fontSize" min="28" max="110" value="64" class="w-full accent-indigo-500 bg-slate-200 dark:bg-slate-800 rounded-lg h-2 cursor-pointer">
+          </div>
+
+          <!-- Line Spacing Slider -->
+          <div class="flex flex-col gap-2">
+            <div class="flex justify-between items-center">
+              <label for="lineSpacing" class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="lineSpacingLabel">Line Spacing</label>
+              <span id="lineSpacingVal" class="text-xs lg:text-sm font-mono font-semibold text-indigo-400 bg-slate-800 border border-slate-700 px-2.5 py-0.5 rounded-md">1.85x</span>
+            </div>
+            <input type="range" id="lineSpacing" min="1.0" max="3.0" step="0.05" value="1.85" class="w-full accent-indigo-500 bg-slate-200 dark:bg-slate-800 rounded-lg h-2 cursor-pointer">
+          </div>
+
+          <!-- Vertical Position Shift Slider -->
+          <div class="flex flex-col gap-2">
+            <div class="flex justify-between items-center">
+              <label for="verticalShift" class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="verticalShiftLabel">Vertical Position Shift</label>
+              <span id="verticalShiftVal" class="text-xs lg:text-sm font-mono font-semibold text-indigo-400 bg-slate-800 border border-slate-700 px-2.5 py-0.5 rounded-md">0px</span>
+            </div>
+            <input type="range" id="verticalShift" min="-300" max="300" value="0" class="w-full accent-indigo-500 bg-slate-200 dark:bg-slate-800 rounded-lg h-2 cursor-pointer">
+          </div>
+        </div>
+
+        <!-- Custom Audio Upload -->
+        <div class="flex flex-col gap-2 pt-3 border-t border-slate-200 dark:border-slate-800/80 mb-6 lg:mb-0">
+          <label class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="audioLabel">Custom Audio File (MP3/WAV)</label>
+          <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-950/40 transition group">
+            <div class="flex flex-col items-center justify-center pt-2 pb-2">
+              <i class="fa-solid fa-cloud-arrow-up text-slate-400 group-hover:text-indigo-500 mb-1.5 text-lg transition"></i>
+              <p class="text-xs lg:text-sm font-medium text-slate-500 dark:text-slate-400 group-hover:text-slate-200" id="audioFileName" data-i18n="audioDrop">Upload Custom Audio MP3</p>
+            </div>
+            <input type="file" id="audioUpload" accept="audio/*" class="hidden">
+          </label>
+          <audio id="audioElement" crossorigin="anonymous" class="hidden"></audio>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER PANEL: WORKSPACE STAGE & CANVAS PREVIEW (Main Stage) -->
+    <main id="viewportContainer" class="flex-1 bg-slate-100 dark:bg-slate-950 transition-colors duration-200 flex flex-col items-center lg:justify-center relative px-3 pt-2 pb-2 lg:p-6 select-none shrink-0 order-1 lg:order-2 h-full overflow-y-auto lg:overflow-hidden">
+      
+      <!-- Video Canvas Stage Wrapper -->
+      <div id="canvasWrapper" class="relative shadow-2xl rounded-3xl lg:rounded-2xl overflow-hidden flex items-center justify-center border border-slate-300 dark:border-slate-800/80 transition-all duration-200 bg-black leading-none my-auto">
+        <canvas id="videoCanvas" width="1080" height="1920" style="aspect-ratio: 9 / 16;" class="w-auto h-auto object-contain block border-0 p-0 m-0"></canvas>
+      </div>
+
+      <!-- MOBILE-ONLY QUICK CONTROLS -->
+      <div class="lg:hidden w-full max-w-xs flex flex-col gap-1.5 z-10 shrink-0 mt-1.5">
+        <!-- Font Size + Position Card -->
+        <div class="bg-slate-900/95 border border-slate-800/80 rounded-2xl px-3 py-2.5 flex flex-col gap-2.5 backdrop-blur-md mobile-no-blur shadow-lg">
+          <div class="flex items-center gap-2.5">
+            <i class="fa-solid fa-text-height text-indigo-400 text-[11px] w-3.5 text-center shrink-0" title="Text Size"></i>
+            <input type="range" id="mobileFontSize" min="28" max="110" value="64" class="w-full accent-indigo-500 bg-slate-800 h-1.5 rounded-lg">
+          </div>
+          <div class="flex items-center gap-2.5">
+            <i class="fa-solid fa-arrows-up-down text-indigo-400 text-[11px] w-3.5 text-center shrink-0" title="Move Text Up/Down"></i>
+            <input type="range" id="mobileVerticalShift" min="-300" max="300" value="0" class="w-full accent-indigo-500 bg-slate-800 h-1.5 rounded-lg">
+            <!-- Quick Format Swap Button -->
+            <button onclick="toggleMobileFormat()" class="bg-slate-800/90 border border-slate-700/80 hover:bg-slate-700 text-slate-200 pl-2 pr-2.5 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1 active:scale-95 transition shrink-0">
+              <i class="fa-solid fa-mobile-screen text-indigo-400 text-[11px]"></i>
+              <span id="mobileFormatText">9:16</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- MOBILE QUICK SURAH/AYAH CONTROLLER DOCK -->
+        <div class="bg-slate-900/95 border border-slate-800/80 rounded-2xl p-2 flex items-center gap-1.5 backdrop-blur-md mobile-no-blur shadow-lg">
+          <!-- Surah Dropdown -->
+          <div class="flex items-center gap-1 bg-slate-950/80 border border-slate-800/80 rounded-xl px-2 py-1.5 flex-1 min-w-0">
+            <span class="text-[10px] font-bold text-slate-500 uppercase shrink-0">Surah</span>
+            <select id="mSurahNum" onchange="syncSurahInput(this.value)" class="w-full bg-transparent text-xs font-bold text-slate-100 text-center focus:outline-none cursor-pointer"></select>
+          </div>
+
+          <!-- Ayah Dropdown -->
+          <div class="flex items-center gap-1 bg-slate-950/80 border border-slate-800/80 rounded-xl px-2 py-1.5 flex-1 min-w-0">
+            <span class="text-[10px] font-bold text-slate-500 uppercase shrink-0">Ayah</span>
+            <select id="mAyahNum" onchange="syncAyahInput(this.value)" class="w-full bg-transparent text-xs font-bold text-slate-100 text-center focus:outline-none cursor-pointer"></select>
+          </div>
+
+          <!-- View Ayah Action Button -->
+          <button onclick="viewAyahAndAudio()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-indigo-950/50 transition" title="View Ayah">
+            <i class="fa-solid fa-right-to-bracket text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Professional Transport Bar -->
+      <div class="my-1 lg:mt-5 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 px-6 lg:px-8 py-2 lg:py-2.5 rounded-full shadow-2xl backdrop-blur-md mobile-no-blur flex items-center gap-5 lg:gap-8 z-10 shrink-0 transition-colors duration-200">
+        <button id="playBtn" onclick="togglePlay()" class="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center text-xs lg:text-sm transition shadow-lg shadow-indigo-950/30">
+          <i id="playIcon" class="fa-solid fa-play ml-0.5"></i>
+        </button>
+        <button id="shuffleBtn" onclick="shuffleVerse()" class="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-indigo-500 dark:text-indigo-400 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs lg:text-sm transition shadow-sm active:scale-95" title="Shuffle: Random Verse">
+          <i id="shuffleIcon" class="fa-solid fa-shuffle"></i>
+        </button>
+        <div class="flex items-center gap-2 text-xs lg:text-sm font-mono font-semibold text-slate-600 dark:text-slate-400">
+          <span id="currentTime">00:00</span>
+          <span class="text-slate-400 dark:text-slate-600">/</span>
+          <span id="totalTime">00:00</span>
+        </div>
+      </div>
+
+      <!-- MOBILE EXPORT & DONATE BUTTONS (below the play/pause transport bar) -->
+      <div class="lg:hidden w-full max-w-xs mb-1 flex items-center gap-2 z-10 shrink-0">
+        <button onclick="startExportProcess()" class="flex-1 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition">
+          <i class="fa-solid fa-download text-xs"></i>
+          <span data-i18n="export">Export</span>
+        </button>
+        <button onclick="openDonateModal()" class="flex-1 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition">
+          <i class="fa-solid fa-coins text-xs"></i>
+          <span data-i18n="donate">Donate</span>
+        </button>
+      </div>
     </main>
 
-    <!-- Centered Bottom Bar -->
-    <div class="bottom-bar">
-        <div class="website-label" id="donateTrigger">Donate</div>
-        <button class="website-label fullscreen-btn" id="fullscreenToggle" aria-label="Toggle Fullscreen">Fullscreen</button>
-    </div>
+    <!-- RIGHT PANEL: QURAN API VERSE LOOKUP & RECITER SELECTOR -->
+    <aside id="rightPanel" class="w-full lg:w-[440px] flex-1 lg:flex-none min-h-0 border-l border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900/90 backdrop-blur-md mobile-no-blur flex-col shrink-0 z-10 hidden lg:flex order-3 overflow-y-auto transition-colors duration-200">
+      <div class="p-4 lg:p-5 border-b border-slate-200 dark:border-slate-800/80 flex items-center gap-2.5">
+        <i class="fa-solid fa-book-open text-indigo-500 text-base"></i>
+        <h2 class="text-xs lg:text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="quranApiTitle">Quran Verse & Audio Fetcher</h2>
+      </div>
 
-    <!-- Responsive Donate Modal -->
-    <div class="modal-overlay" id="donateModal">
-        <div class="modal-card">
-            <button class="modal-close" id="closeModal" aria-label="Close">&times;</button>
-            
-            <div class="modal-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-                    <rect x="10" y="12" width="44" height="28" rx="4" fill="#8b5cf6"/>
-                    <rect x="13" y="15" width="38" height="22" rx="2" fill="#0b0f19"/>
-                    <rect x="28" y="40" width="8" height="8" fill="#a855f7"/>
-                    <rect x="20" y="48" width="24" height="4" rx="2" fill="#a855f7"/>
-                </svg>
-            </div>
-            
-            <div class="modal-desc">
-                <p dir="rtl" style="font-size: 1.05rem; font-weight: 600; color: #e2e8f0;">السلام عليكم</p>
-                <p>I'm Hasan Janahi, the founder and developer of this website. Basically you can use this site as a Dhikr monitor for any screen. Hope you like it!</p>
-                <p dir="rtl" style="font-size: 1.05rem; font-weight: 600; color: #e2e8f0; margin-top: 10px;">جزاكم الله خيرا</p>
-            </div>
+      <div class="p-5 flex flex-col gap-6">
+        
+        <!-- API Search Box -->
+        <div class="bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 lg:p-5 flex flex-col gap-3.5 shadow-inner">
+          <span class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-magnifying-glass text-indigo-500 text-xs"></i>
+            <span data-i18n="searchVerse">Lookup Surah & Ayah</span>
+          </span>
 
-            <div class="donate-links">
-                <a href="https://matwproject.org/" target="_blank" rel="noopener" class="donate-btn">
-                    Donate Palestine
-                </a>
-                <a href="https://www.instagram.com/hasanjanahii" target="_blank" rel="noopener" class="donate-btn">
-                    Instagram
-                </a>
-                <a href="https://www.youtube.com/@hasanjanahi" target="_blank" rel="noopener" class="donate-btn">
-                    YouTube
-                </a>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block" data-i18n="surahLabel">Surah No.</label>
+              <select id="surahNum" onchange="syncSurahInput(this.value)" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-xs lg:text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition cursor-pointer"></select>
             </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block" data-i18n="ayahLabel">Ayah No.</label>
+              <select id="ayahNum" onchange="syncAyahInput(this.value)" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-xs lg:text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition cursor-pointer"></select>
+            </div>
+          </div>
+
+          <!-- Reciter Dropdown -->
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-semibold text-slate-500 dark:text-slate-400" data-i18n="reciterLabel">Select Reciter (EveryAyah.com)</label>
+            <select id="reciterSelect" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-xs lg:text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition cursor-pointer">
+            </select>
+          </div>
+
+          <div class="grid grid-cols-1 gap-2 pt-1">
+            <button onclick="viewAyahAndAudio()" id="fetchVerseBtn" class="w-full py-2.5 lg:py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs lg:text-sm transition flex items-center justify-center gap-2 shadow-sm">
+              <i class="fa-solid fa-right-to-bracket"></i>
+              <span data-i18n="btnFetchText">View Ayah</span>
+            </button>
+          </div>
         </div>
+
+        <!-- Quran Text Editing Box -->
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <label for="quranInput" class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="textLabel">Ayah Script Box</label>
+            <span class="text-xs text-slate-500 dark:text-slate-400" data-i18n="editable">Directly Editable</span>
+          </div>
+          <textarea id="quranInput" rows="7" dir="rtl" class="w-full bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-xl lg:text-2xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition resize-none quran-font leading-relaxed shadow-inner" placeholder="إلصق النص القرآني هنا..."></textarea>
+        </div>
+
+      </div>
+    </aside>
+  </div>
+
+  <!-- RENDER PROGRESS MODAL -->
+  <div id="exportModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center gap-4">
+      <div class="w-14 h-14 rounded-full bg-slate-800 text-indigo-400 border border-slate-700 flex items-center justify-center text-2xl">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-base text-slate-900 dark:text-slate-100" data-i18n="renderingTitle">Rendering Video</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" data-i18n="renderingSub">Encoding high-bitrate video. Please keep this tab active.</p>
+      </div>
+
+      <div class="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+        <div id="exportProgressBar" class="bg-indigo-500 h-full w-0 transition-all duration-150"></div>
+      </div>
+      <span id="exportProgressText" class="text-xs font-mono font-bold text-indigo-400">0%</span>
+
+      <!-- Cancel Export Button -->
+      <button onclick="cancelExportProcess()" class="mt-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-semibold text-xs transition flex items-center gap-2">
+        <i class="fa-solid fa-xmark"></i>
+        <span data-i18n="cancelExport">Cancel Export</span>
+      </button>
     </div>
+  </div>
 
-    <script>
-        // Clean Arabic text strings relying on native font ligatures
-        const athkar = [
-            "سُبْحَانَ اللَّهِ",
-            "الْحَمْدُ لِلَّهِ",
-            "لَا إِلَٰهَ إِلَّا اللَّهُ",
-            "اللَّهُ أَكْبَرُ",
-            "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ",
-            "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
-            "سُبْحَانَ اللَّهِ الْعَظِيمِ",
-            "أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ",
-            "اللَّهُمَّ صَلِّ عَلَىٰ مُحَمَّدٍ وَعَلَىٰ آلِ مُحَمَّدٍ"
-        ];
+  <!-- DONATE / SUPPORT MODAL -->
+  <div id="donateModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center gap-5 relative transition-colors duration-200">
 
-        let currentIndex = 0;
-        const dhikrDisplay = document.getElementById('dhikrDisplay');
+      <!-- Close (X) Button -->
+      <button onclick="closeDonateModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
 
-        // Cycle every 2.3 seconds (2300ms)
-        setInterval(() => {
-            dhikrDisplay.classList.add('fade');
+      <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-600 via-violet-600 to-indigo-500 border border-indigo-400/30 flex items-center justify-center text-white text-2xl shadow-lg shadow-indigo-500/25">
+        <i class="fa-solid fa-coins"></i>
+      </div>
 
-            setTimeout(() => {
-                currentIndex = (currentIndex + 1) % athkar.length;
-                dhikrDisplay.textContent = athkar[currentIndex];
-                dhikrDisplay.classList.remove('fade');
-            }, 350);
+      <div>
+        <h3 class="font-bold text-base text-slate-900 dark:text-slate-100" data-i18n="donateTitle">Support &amp; Connect</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" data-i18n="donateSub">Thank you for considering supporting the cause and following along.</p>
+      </div>
 
-        }, 2300);
+      <div class="w-full flex flex-col gap-2.5">
+        <a href="https://matwproject.org/" target="_blank" rel="noopener noreferrer" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs lg:text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50">
+          <i class="fa-solid fa-coins"></i>
+          <span data-i18n="donatePalestine">Donate Palestine</span>
+        </a>
 
-        // --- MODAL CONTROLS ---
-        const donateTrigger = document.getElementById('donateTrigger');
-        const donateModal = document.getElementById('donateModal');
-        const closeModal = document.getElementById('closeModal');
+        <a href="https://www.instagram.com/hasanjanahii" target="_blank" rel="noopener noreferrer" class="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs lg:text-sm transition flex items-center justify-center gap-2">
+          <i class="fa-brands fa-instagram"></i>
+          <span>Instagram</span>
+        </a>
 
-        function openModal() {
-            donateModal.classList.add('active');
+        <a href="https://www.youtube.com/@hasanjanahi" target="_blank" rel="noopener noreferrer" class="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs lg:text-sm transition flex items-center justify-center gap-2">
+          <i class="fa-brands fa-youtube"></i>
+          <span>Youtube</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // FIXED AND FULL EVERYAYAH.COM RECITERS CATALOG WITH DEFAULT NASSER AL QATAMI
+    const EVERYAYAH_RECITERS = [
+      { name: "Nasser Al Qatami", folder: "Nasser_Alqatami_128kbps" },
+      { name: "Yasser Al-Dosari", folder: "Yasser_Ad-Dussary_128kbps" },
+      { name: "Mishary Rashid Alafasy", folder: "Alafasy_128kbps" },
+      { name: "Maher Al Muaiqly", folder: "MaherAlMuaiqly128kbps" },
+      { name: "Abdul Basit (Murattal)", folder: "Abdul_Basit_Murattal_192kbps" },
+      { name: "Abdul Basit (Mujawwad)", folder: "Abdul_Basit_Mujawwad_128kbps" },
+      { name: "Abdullah Juhaynee", folder: "Abdullaah_3awwaad_Al-Juhaynee_128kbps" },
+      { name: "Abdullah Basfar", folder: "Abdullah_Basfar_192kbps" },
+      { name: "Abdurrahmaan As-Sudais", folder: "Abdurrahmaan_As-Sudais_192kbps" },
+      { name: "Abu Bakr Ash-Shaatree", folder: "Abu_Bakr_Ash-Shaatree_128kbps" },
+      { name: "Ahmed Al-Ajamy", folder: "Ahmed_ibn_Ali_al-Ajamy_128kbps_ketaballah.net" },
+      { name: "Ali Jaber", folder: "Ali_Jaber_64kbps" },
+      { name: "Fares Abbad", folder: "Fares_Abbad_64kbps" },
+      { name: "Hani Rifai", folder: "Hani_Rifai_192kbps" },
+      { name: "Mahmoud Al-Husary", folder: "Husary_128kbps" },
+      { name: "Minshawy (Murattal)", folder: "Minshawy_Murattal_128kbps" },
+      { name: "Minshawy (Mujawwad)", folder: "Minshawy_Mujawwad_192kbps" },
+      { name: "Saad Al-Ghamdi", folder: "Ghamadi_40kbps" },
+      { name: "Saood Ash-Shuraym", folder: "Shuraym_128kbps" }
+    ];
+
+    // FULL 114-SURAH CATALOG: [Number, Name, Ayah Count] — standard Hafs/Uthmani numbering
+    const SURAH_DATA = [
+      {n:1,name:"Al-Fatihah",ayahs:7},{n:2,name:"Al-Baqarah",ayahs:286},{n:3,name:"Aal-E-Imran",ayahs:200},
+      {n:4,name:"An-Nisa",ayahs:176},{n:5,name:"Al-Ma'idah",ayahs:120},{n:6,name:"Al-An'am",ayahs:165},
+      {n:7,name:"Al-A'raf",ayahs:206},{n:8,name:"Al-Anfal",ayahs:75},{n:9,name:"At-Tawbah",ayahs:129},
+      {n:10,name:"Yunus",ayahs:109},{n:11,name:"Hud",ayahs:123},{n:12,name:"Yusuf",ayahs:111},
+      {n:13,name:"Ar-Ra'd",ayahs:43},{n:14,name:"Ibrahim",ayahs:52},{n:15,name:"Al-Hijr",ayahs:99},
+      {n:16,name:"An-Nahl",ayahs:128},{n:17,name:"Al-Isra",ayahs:111},{n:18,name:"Al-Kahf",ayahs:110},
+      {n:19,name:"Maryam",ayahs:98},{n:20,name:"Ta-Ha",ayahs:135},{n:21,name:"Al-Anbiya",ayahs:112},
+      {n:22,name:"Al-Hajj",ayahs:78},{n:23,name:"Al-Mu'minun",ayahs:118},{n:24,name:"An-Nur",ayahs:64},
+      {n:25,name:"Al-Furqan",ayahs:77},{n:26,name:"Ash-Shu'ara",ayahs:227},{n:27,name:"An-Naml",ayahs:93},
+      {n:28,name:"Al-Qasas",ayahs:88},{n:29,name:"Al-Ankabut",ayahs:69},{n:30,name:"Ar-Rum",ayahs:60},
+      {n:31,name:"Luqman",ayahs:34},{n:32,name:"As-Sajdah",ayahs:30},{n:33,name:"Al-Ahzab",ayahs:73},
+      {n:34,name:"Saba",ayahs:54},{n:35,name:"Fatir",ayahs:45},{n:36,name:"Ya-Sin",ayahs:83},
+      {n:37,name:"As-Saffat",ayahs:182},{n:38,name:"Sad",ayahs:88},{n:39,name:"Az-Zumar",ayahs:75},
+      {n:40,name:"Ghafir",ayahs:85},{n:41,name:"Fussilat",ayahs:54},{n:42,name:"Ash-Shura",ayahs:53},
+      {n:43,name:"Az-Zukhruf",ayahs:89},{n:44,name:"Ad-Dukhan",ayahs:59},{n:45,name:"Al-Jathiyah",ayahs:37},
+      {n:46,name:"Al-Ahqaf",ayahs:35},{n:47,name:"Muhammad",ayahs:38},{n:48,name:"Al-Fath",ayahs:29},
+      {n:49,name:"Al-Hujurat",ayahs:18},{n:50,name:"Qaf",ayahs:45},{n:51,name:"Adh-Dhariyat",ayahs:60},
+      {n:52,name:"At-Tur",ayahs:49},{n:53,name:"An-Najm",ayahs:62},{n:54,name:"Al-Qamar",ayahs:55},
+      {n:55,name:"Ar-Rahman",ayahs:78},{n:56,name:"Al-Waqi'ah",ayahs:96},{n:57,name:"Al-Hadid",ayahs:29},
+      {n:58,name:"Al-Mujadila",ayahs:22},{n:59,name:"Al-Hashr",ayahs:24},{n:60,name:"Al-Mumtahanah",ayahs:13},
+      {n:61,name:"As-Saff",ayahs:14},{n:62,name:"Al-Jumu'ah",ayahs:11},{n:63,name:"Al-Munafiqun",ayahs:11},
+      {n:64,name:"At-Taghabun",ayahs:18},{n:65,name:"At-Talaq",ayahs:12},{n:66,name:"At-Tahrim",ayahs:12},
+      {n:67,name:"Al-Mulk",ayahs:30},{n:68,name:"Al-Qalam",ayahs:52},{n:69,name:"Al-Haqqah",ayahs:52},
+      {n:70,name:"Al-Ma'arij",ayahs:44},{n:71,name:"Nuh",ayahs:28},{n:72,name:"Al-Jinn",ayahs:28},
+      {n:73,name:"Al-Muzzammil",ayahs:20},{n:74,name:"Al-Muddathir",ayahs:56},{n:75,name:"Al-Qiyamah",ayahs:40},
+      {n:76,name:"Al-Insan",ayahs:31},{n:77,name:"Al-Mursalat",ayahs:50},{n:78,name:"An-Naba",ayahs:40},
+      {n:79,name:"An-Nazi'at",ayahs:46},{n:80,name:"Abasa",ayahs:42},{n:81,name:"At-Takwir",ayahs:29},
+      {n:82,name:"Al-Infitar",ayahs:19},{n:83,name:"Al-Mutaffifin",ayahs:36},{n:84,name:"Al-Inshiqaq",ayahs:25},
+      {n:85,name:"Al-Buruj",ayahs:22},{n:86,name:"At-Tariq",ayahs:17},{n:87,name:"Al-A'la",ayahs:19},
+      {n:88,name:"Al-Ghashiyah",ayahs:26},{n:89,name:"Al-Fajr",ayahs:30},{n:90,name:"Al-Balad",ayahs:20},
+      {n:91,name:"Ash-Shams",ayahs:15},{n:92,name:"Al-Layl",ayahs:21},{n:93,name:"Ad-Duha",ayahs:11},
+      {n:94,name:"Ash-Sharh",ayahs:8},{n:95,name:"At-Tin",ayahs:8},{n:96,name:"Al-Alaq",ayahs:19},
+      {n:97,name:"Al-Qadr",ayahs:5},{n:98,name:"Al-Bayyinah",ayahs:8},{n:99,name:"Az-Zalzalah",ayahs:8},
+      {n:100,name:"Al-Adiyat",ayahs:11},{n:101,name:"Al-Qari'ah",ayahs:11},{n:102,name:"At-Takathur",ayahs:8},
+      {n:103,name:"Al-Asr",ayahs:3},{n:104,name:"Al-Humazah",ayahs:9},{n:105,name:"Al-Fil",ayahs:5},
+      {n:106,name:"Quraysh",ayahs:4},{n:107,name:"Al-Ma'un",ayahs:7},{n:108,name:"Al-Kawthar",ayahs:3},
+      {n:109,name:"Al-Kafirun",ayahs:6},{n:110,name:"An-Nasr",ayahs:3},{n:111,name:"Al-Masad",ayahs:5},
+      {n:112,name:"Al-Ikhlas",ayahs:4},{n:113,name:"Al-Falaq",ayahs:5},{n:114,name:"An-Nas",ayahs:6}
+    ];
+    // Track verses already shown by the Shuffle button this session, so
+    // it never repeats a verse until every verse in the Quran has come up.
+    let shuffledVerses = new Set();
+
+    // State Variables
+    let currentLang = 'en';
+    let currentFormat = '9:16';
+    let isPlaying = false;
+    let animationFrameId = null;
+    let audioPlaylist = [];
+    let currentAudioIndex = 0;
+
+    // Persistent Web Audio API Nodes
+    let audioCtx = null;
+    let audioSourceNode = null;
+    let audioDestNode = null;
+    let monitorGainNode = null;
+    let recordGainNode = null;
+    
+    // Export state variables
+    let activeRecorder = null;
+    let exportAnimFrameId = null;
+    let isExporting = false;
+
+    // DOM Elements
+    const canvas = document.getElementById('videoCanvas');
+    const ctx = canvas.getContext('2d');
+    const quranInput = document.getElementById('quranInput');
+    const audioUpload = document.getElementById('audioUpload');
+    const audioElement = document.getElementById('audioElement');
+    const bgColorInput = document.getElementById('bgColor');
+    const textColorInput = document.getElementById('textColor');
+    const fontSizeInput = document.getElementById('fontSize');
+    const mobileFontSize = document.getElementById('mobileFontSize');
+    const lineSpacingInput = document.getElementById('lineSpacing');
+    const verticalShiftInput = document.getElementById('verticalShift');
+    const mobileVerticalShift = document.getElementById('mobileVerticalShift');
+
+    // Language Dictionary
+    const translations = {
+      en: {
+        subtitle: "Quran Video Creator",
+        export: "Export",
+        styleTitle: "Canvas & Visuals",
+        formatLabel: "Video Dimensions",
+        colorsLabel: "Canvas Palette",
+        bgColor: "Background",
+        textColor: "Text Color",
+        fontSizeLabel: "Font Size",
+        lineSpacingLabel: "Line Spacing",
+        verticalShiftLabel: "Vertical Position Shift",
+        audioLabel: "Custom Audio File (MP3/WAV)",
+        audioDrop: "Upload Custom Audio MP3",
+        quranApiTitle: "Quran Verse & Audio Fetcher",
+        searchVerse: "Lookup Surah & Ayah",
+        surahLabel: "Surah No.",
+        ayahLabel: "Ayah No.",
+        reciterLabel: "Select Reciter (EveryAyah.com)",
+        btnFetchText: "View Ayah",
+        textLabel: "Ayah Script Box",
+        editable: "Directly Editable",
+        tabPreview: "Studio",
+        tabScript: "Script & Audio",
+        renderingTitle: "Rendering Video...",
+        renderingSub: "Encoding high-bitrate video. Please keep this tab active.",
+        cancelExport: "Cancel Export",
+        donate: "Donate",
+        donateTitle: "Support & Connect",
+        donateSub: "Thank you for considering supporting the cause and following along.",
+        donatePalestine: "Donate Palestine"
+      },
+      ar: {
+        subtitle: "صانع فيديوهات القرآن",
+        export: "تصدير",
+        styleTitle: "الأبعاد والتصميم",
+        formatLabel: "أبعاد الفيديو",
+        colorsLabel: "ألوان الفيديو",
+        bgColor: "خلفية الفيديو",
+        textColor: "لون النص",
+        fontSizeLabel: "حجم الخط",
+        lineSpacingLabel: "المسافة بين الأسطر",
+        verticalShiftLabel: "الإزاحة العمودية للنص",
+        audioLabel: "ملف صوتي خارجي (MP3)",
+        audioDrop: "رفع ملف صوتي MP3",
+        quranApiTitle: "البحث في القرآن الكريم",
+        searchVerse: "جلب السورة والآية",
+        surahLabel: "رقم السورة",
+        ayahLabel: "رقم الآية",
+        reciterLabel: "اختر القارئ (EveryAyah.com)",
+        btnFetchText: "عرض الآية",
+        textLabel: "مربع نص الآيات",
+        editable: "قابل للتعديل المباشر",
+        tabPreview: "المعاينة",
+        tabScript: "النص والصوت",
+        renderingTitle: "جاري تصدير الفيديو...",
+        renderingSub: "يتم إنشاء الفيديو بأعلى جودة. يرجى الانتظار.",
+        cancelExport: "إلغاء التصدير",
+        donate: "تبرع",
+        donateTitle: "الدعم والتواصل",
+        donateSub: "شكراً لدعمك القضية ومتابعتك.",
+        donatePalestine: "تبرع لفلسطين"
+      }
+    };
+
+    function populateReciterDropdown() {
+      const select = document.getElementById('reciterSelect');
+      select.innerHTML = '';
+      EVERYAYAH_RECITERS.forEach(reciter => {
+        const opt = document.createElement('option');
+        opt.value = reciter.folder;
+        opt.textContent = reciter.name;
+        if (reciter.folder.includes("Nasser_Alqatami")) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    // Populate both the desktop and mobile Surah dropdowns with all 114 Surahs
+    function populateSurahDropdowns(selectedSurah) {
+      ['surahNum', 'mSurahNum'].forEach(id => {
+        const select = document.getElementById(id);
+        select.innerHTML = '';
+        SURAH_DATA.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.n;
+          opt.textContent = `${s.n}. ${s.name}`;
+          if (s.n === selectedSurah) opt.selected = true;
+          select.appendChild(opt);
+        });
+      });
+    }
+
+    // Populate both the desktop and mobile Ayah dropdowns for a given Surah
+    function populateAyahDropdowns(surahNum, selectedAyah) {
+      const surah = SURAH_DATA.find(s => s.n === parseInt(surahNum)) || SURAH_DATA[0];
+      ['ayahNum', 'mAyahNum'].forEach(id => {
+        const select = document.getElementById(id);
+        select.innerHTML = '';
+        for (let i = 1; i <= surah.ayahs; i++) {
+          const opt = document.createElement('option');
+          opt.value = i;
+          opt.textContent = i;
+          if (i === selectedAyah) opt.selected = true;
+          select.appendChild(opt);
+        }
+      });
+    }
+
+    quranInput.value = "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ";
+
+    // Sync dropdown values between Mobile and Desktop controls. Changing
+    // the Surah repopulates both Ayah dropdowns (Ayah count differs per
+    // Surah) and resets the Ayah selection to 1.
+    function syncSurahInput(val) {
+      const surahVal = parseInt(val);
+      document.getElementById('surahNum').value = surahVal;
+      document.getElementById('mSurahNum').value = surahVal;
+      populateAyahDropdowns(surahVal, 1);
+    }
+
+    function syncAyahInput(val) {
+      document.getElementById('ayahNum').value = val;
+      document.getElementById('mAyahNum').value = val;
+    }
+
+    // Pick a random verse from the entire Quran (weighted evenly across
+    // all ~6236 verses) that hasn't been shown yet this session, load its
+    // text + audio automatically. Once every verse has been shown, the
+    // "seen" list resets so shuffling never gets stuck.
+    const TOTAL_VERSES = SURAH_DATA.reduce((sum, s) => sum + s.ayahs, 0);
+    function shuffleVerse() {
+      if (shuffledVerses.size >= TOTAL_VERSES) shuffledVerses.clear();
+
+      let surahNum, ayahNum, key;
+      do {
+        let idx = Math.floor(Math.random() * TOTAL_VERSES) + 1;
+        for (const s of SURAH_DATA) {
+          if (idx <= s.ayahs) {
+            surahNum = s.n;
+            ayahNum = idx;
+            break;
+          }
+          idx -= s.ayahs;
+        }
+        key = `${surahNum}:${ayahNum}`;
+      } while (shuffledVerses.has(key));
+
+      shuffledVerses.add(key);
+
+      populateSurahDropdowns(surahNum);
+      populateAyahDropdowns(surahNum, ayahNum);
+      document.getElementById('surahNum').value = surahNum;
+      document.getElementById('mSurahNum').value = surahNum;
+      document.getElementById('ayahNum').value = ayahNum;
+      document.getElementById('mAyahNum').value = ayahNum;
+
+      viewAyahAndAudio();
+    }
+
+    function toggleMobileFormat() {
+      const targetFormat = currentFormat === '9:16' ? '16:9' : '9:16';
+      setFormat(targetFormat);
+      document.getElementById('mobileFormatText').textContent = targetFormat;
+    }
+
+    // SWITCH MOBILE TABS CLEANLY
+    function switchMobileView(view) {
+      const viewport = document.getElementById('viewportContainer');
+      const left = document.getElementById('leftPanel');
+      const right = document.getElementById('rightPanel');
+
+      const btnCanvas = document.getElementById('mTabCanvas');
+      const btnScript = document.getElementById('mTabScript');
+      const btnStyle = document.getElementById('mTabStyle');
+
+      viewport.classList.add('hidden');
+      left.classList.add('hidden');
+      right.classList.add('hidden');
+
+      const tabBase = "flex-1 py-2.5 flex items-center justify-center gap-1.5 text-slate-400 active:scale-95 active:bg-slate-800/60 transition-all duration-150";
+      const tabActive = "flex-1 py-2.5 flex items-center justify-center gap-1.5 font-bold text-white bg-indigo-600 active:scale-95 transition-all duration-150";
+
+      btnCanvas.className = tabBase;
+      btnScript.className = tabBase;
+      btnStyle.className = tabBase;
+
+      if (view === 'canvas') {
+        viewport.classList.remove('hidden');
+        viewport.classList.add('flex');
+        btnCanvas.className = tabActive;
+      } else if (view === 'script') {
+        right.classList.remove('hidden');
+        right.classList.add('flex');
+        btnScript.className = tabActive;
+      } else if (view === 'style') {
+        left.classList.remove('hidden');
+        left.classList.add('flex');
+        btnStyle.className = tabActive;
+      }
+
+      // Reset scroll position to the top of the newly shown panel so
+      // switching tabs always starts the user at the top of that view.
+      [viewport, left, right].forEach(el => { if (!el.classList.contains('hidden')) el.scrollTop = 0; });
+    }
+
+    // COMBINED FETCH: TEXT & AUDIO
+    async function viewAyahAndAudio() {
+      const surahNumVal = document.getElementById('surahNum').value;
+      const ayahInput = document.getElementById('ayahNum').value.trim();
+      const reciterFolder = document.getElementById('reciterSelect').value;
+      const btn = document.getElementById('fetchVerseBtn');
+
+      if (!surahNumVal || !ayahInput) return;
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Loading...`;
+
+      try {
+        // Fetch Text
+        if (ayahInput.includes('-')) {
+          const [start, end] = ayahInput.split('-');
+          let combinedText = '';
+          for (let i = parseInt(start); i <= parseInt(end); i++) {
+            const res = await fetch(`https://api.quran.com/api/v4/verses/by_key/${surahNumVal}:${i}?fields=text_uthmani`);
+            const data = await res.json();
+            if (data.verse) combinedText += data.verse.text_uthmani + ' ﴿' + i + '﴾ ';
+          }
+          quranInput.value = combinedText.trim();
+        } else {
+          const res = await fetch(`https://api.quran.com/api/v4/verses/by_key/${surahNumVal}:${ayahInput}?fields=text_uthmani`);
+          const data = await res.json();
+          if (data.verse) quranInput.value = data.verse.text_uthmani;
+        }
+        renderCanvas();
+
+        // Fetch Audio - download each track FULLY into memory as a
+        // local blob before we ever set it as the audio source. The
+        // previous version pointed the <audio> element straight at
+        // the remote everyayah.com URL and let the browser stream it
+        // progressively - that progressive network buffering is what
+        // caused the stutter/hiccup right at the start of playback
+        // (and got baked into exports), especially noticeable on
+        // desktop. With a local blob URL, playback never has to wait
+        // on the network at all.
+        const formattedSurah = String(surahNumVal).padStart(3, '0');
+        const cleanFolder = encodeURIComponent(reciterFolder.replace(/\/$/, ''));
+        const remoteUrls = [];
+
+        if (ayahInput.includes('-')) {
+          const [start, end] = ayahInput.split('-');
+          for (let i = parseInt(start); i <= parseInt(end); i++) {
+            const formattedAyah = String(i).padStart(3, '0');
+            remoteUrls.push(`https://everyayah.com/data/${cleanFolder}/${formattedSurah}${formattedAyah}.mp3`);
+          }
+        } else {
+          const formattedAyah = String(ayahInput).padStart(3, '0');
+          remoteUrls.push(`https://everyayah.com/data/${cleanFolder}/${formattedSurah}${formattedAyah}.mp3`);
         }
 
-        function hideModal() {
-            donateModal.classList.remove('active');
+        // Release any blob URLs from a previous ayah before replacing them.
+        audioPlaylist.forEach(url => { if (url.startsWith('blob:')) URL.revokeObjectURL(url); });
+
+        audioPlaylist = [];
+        currentAudioIndex = 0;
+        for (const url of remoteUrls) {
+          const audioRes = await fetch(url);
+          const audioBlob = await audioRes.blob();
+          audioPlaylist.push(URL.createObjectURL(audioBlob));
         }
 
-        donateTrigger.addEventListener('click', openModal);
-        closeModal.addEventListener('click', hideModal);
+        audioElement.crossOrigin = "anonymous";
+        audioElement.src = audioPlaylist[0];
 
-        // Close on background click
-        donateModal.addEventListener('click', (e) => {
-            if (e.target === donateModal) hideModal();
-        });
+        audioElement.onloadedmetadata = () => {
+          document.getElementById('totalTime').textContent = formatTime(audioElement.duration || 0);
+          document.getElementById('audioFileName').textContent = `Recitation Loaded (${audioPlaylist.length} track/s)`;
+        };
 
-        // Close on 'Escape' key press
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') hideModal();
-        });
+        audioElement.load();
 
-        // --- DESKTOP FULLSCREEN LOGIC ---
-        const fullscreenToggle = document.getElementById('fullscreenToggle');
-
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch((err) => {
-                    console.log('Fullscreen error:', err.message);
-                });
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            }
+        // Fully prime BOTH the Web Audio graph and the <audio>
+        // element's own playback pipeline right now, while we're
+        // still inside a real click handler. Warming up only the
+        // AudioContext (as before) wasn't enough - the <audio>
+        // element itself still had to spin up its decode/output
+        // pipeline the first time play() was called, which is what
+        // made the first press of Play unreliable/silent and needed
+        // a second press. Here we actually start playback (muted),
+        // then immediately pause and rewind, so everything is fully
+        // warm and the next real Play press starts instantly.
+        try {
+          await setupAudioPipeline();
+          if (monitorGainNode) monitorGainNode.gain.value = 0;
+          await audioElement.play();
+          audioElement.pause();
+          audioElement.currentTime = 0;
+          if (monitorGainNode) monitorGainNode.gain.value = 1;
+        } catch (pipelineErr) {
+          if (monitorGainNode) monitorGainNode.gain.value = 1;
+          // Non-fatal: togglePlay() will retry pipeline/playback setup itself.
         }
 
-        fullscreenToggle.addEventListener('click', toggleFullscreen);
+      } catch (err) {
+        alert("Could not load verse audio. Please check your internet connection.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> <span data-i18n="btnFetchText">${translations[currentLang].btnFetchText}</span>`;
+      }
+    }
 
-        document.addEventListener('fullscreenchange', () => {
-            if (document.fullscreenElement) {
-                fullscreenToggle.textContent = 'Exit Fullscreen';
-            } else {
-                fullscreenToggle.textContent = 'Fullscreen';
-            }
-        });
+    // Chain audio tracks sequentially
+    audioElement.onended = () => {
+      if (audioPlaylist.length > 1 && currentAudioIndex < audioPlaylist.length - 1) {
+        currentAudioIndex++;
+        audioElement.src = audioPlaylist[currentAudioIndex];
+        audioElement.play();
+      } else {
+        isPlaying = false;
+        currentAudioIndex = 0;
+        document.getElementById('playIcon').className = "fa-solid fa-play ml-0.5";
+      }
+    };
 
-        // --- SCREEN WAKE LOCK LOGIC ---
-        let wakeLock = null;
+    function toggleLanguage() {
+      currentLang = currentLang === 'en' ? 'ar' : 'en';
+      document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+      document.getElementById('langLabel').textContent = currentLang === 'en' ? 'عربي' : 'English';
 
-        async function requestWakeLock() {
-            try {
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                }
-            } catch (err) {
-                console.log('Wake Lock Error:', err.name, err.message);
-            }
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[currentLang][key]) el.textContent = translations[currentLang][key];
+      });
+    }
+
+    // GLITCH-FREE DARK MODE TOGGLE
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+    }
+
+    function fitCanvasSize() {
+      // Explicitly compute the on-screen CSS pixel box for the canvas in
+      // JS (rather than leaning on CSS max-width/max-height + intrinsic
+      // aspect ratio, which some mobile browsers resolve inconsistently
+      // and can end up wide/short instead of a true tall 9:16). We pick
+      // whichever of "fit to width" or "fit to height" is smaller, so the
+      // canvas is always the exact aspect ratio and always fits on screen.
+      const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+      const ratioW = currentFormat === '9:16' ? 9 : 16;
+      const ratioH = currentFormat === '9:16' ? 16 : 9;
+      const viewportH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      const viewportW = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+ 
+      const maxW = isDesktop ? viewportW * 0.80 : viewportW * 0.94;
+      const maxH = isDesktop ? viewportH * 0.60 : viewportH * 0.66;
+ 
+      let w = maxW;
+      let h = w * (ratioH / ratioW);
+      if (h > maxH) {
+        h = maxH;
+        w = h * (ratioW / ratioH);
+      }
+ 
+      canvas.style.width = `${Math.round(w)}px`;
+      canvas.style.height = `${Math.round(h)}px`;
+    }
+    window.addEventListener('resize', fitCanvasSize);
+    window.addEventListener('orientationchange', fitCanvasSize);
+ 
+    function setFormat(format) {
+      currentFormat = format;
+      const btn916 = document.getElementById('btn916');
+      const btn169 = document.getElementById('btn169');
+
+      if (format === '9:16') {
+        canvas.width = 1080;
+        canvas.height = 1920;
+        canvas.style.aspectRatio = '9 / 16';
+        btn916.className = "py-3 px-3 rounded-xl bg-slate-800 text-indigo-400 border border-slate-700 font-semibold text-xs lg:text-sm flex flex-col items-center gap-1.5 transition shadow-sm";
+        btn169.className = "py-3 px-3 rounded-xl bg-slate-100 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-xs lg:text-sm flex flex-col items-center gap-1.5 transition";
+      } else {
+        canvas.width = 1920;
+        canvas.height = 1080;
+        canvas.style.aspectRatio = '16 / 9';
+        btn169.className = "py-3 px-3 rounded-xl bg-slate-800 text-indigo-400 border border-slate-700 font-semibold text-xs lg:text-sm flex flex-col items-center gap-1.5 transition shadow-sm";
+        btn916.className = "py-3 px-3 rounded-xl bg-slate-100 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-xs lg:text-sm flex flex-col items-center gap-1.5 transition";
+      }
+      fitCanvasSize();
+      renderCanvas();
+    }
+
+    function wrapText(context, text, x, y, maxWidth, lineHeight, offsetY) {
+      const words = text.split(' ');
+      let line = '';
+      const lines = [];
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = context.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          lines.push(line);
+          line = words[n] + ' ';
+        } else {
+          line = testLine;
         }
+      }
+      lines.push(line);
 
-        requestWakeLock();
+      const totalHeight = lines.length * lineHeight;
+      let startY = (y + offsetY) - (totalHeight / 2) + (lineHeight / 2);
 
-        document.addEventListener('visibilitychange', () => {
-            if (wakeLock !== null && document.visibilityState === 'visible') {
-                requestWakeLock();
-            }
-        });
+      for (let k = 0; k < lines.length; k++) {
+        context.fillText(lines[k].trim(), x, startY + (k * lineHeight));
+      }
+    }
 
-        document.addEventListener('click', () => {
-            if (!wakeLock) requestWakeLock();
-        }, { once: true });
-    </script>
+    function renderCanvas() {
+      ctx.fillStyle = bgColorInput.value;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const text = quranInput.value.trim();
+      if (text) {
+        const size = parseInt(fontSizeInput.value, 10);
+        const spacingMultiplier = parseFloat(lineSpacingInput.value);
+        const shiftY = parseInt(verticalShiftInput.value, 10);
+
+        ctx.font = `${size}px "Amiri Quran", "Amiri", serif`;
+        ctx.fillStyle = textColorInput.value;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        const padding = currentFormat === '9:16' ? 140 : 260;
+        const maxWidth = canvas.width - (padding * 2);
+        const lineHeight = size * spacingMultiplier;
+
+        wrapText(ctx, text, canvas.width / 2, canvas.height / 2, maxWidth, lineHeight, shiftY);
+      }
+    }
+
+    // Input listeners & sync
+    bgColorInput.addEventListener('input', (e) => {
+      document.getElementById('bgColorVal').textContent = e.target.value.toUpperCase();
+      renderCanvas();
+    });
+
+    textColorInput.addEventListener('input', (e) => {
+      document.getElementById('textColorVal').textContent = e.target.value.toUpperCase();
+      renderCanvas();
+    });
+
+    fontSizeInput.addEventListener('input', (e) => {
+      document.getElementById('fontSizeVal').textContent = `${e.target.value}px`;
+      mobileFontSize.value = e.target.value;
+      renderCanvas();
+    });
+
+    mobileFontSize.addEventListener('input', (e) => {
+      fontSizeInput.value = e.target.value;
+      document.getElementById('fontSizeVal').textContent = `${e.target.value}px`;
+      renderCanvas();
+    });
+
+    lineSpacingInput.addEventListener('input', (e) => {
+      document.getElementById('lineSpacingVal').textContent = `${parseFloat(e.target.value).toFixed(2)}x`;
+      renderCanvas();
+    });
+
+    verticalShiftInput.addEventListener('input', (e) => {
+      document.getElementById('verticalShiftVal').textContent = `${e.target.value}px`;
+      mobileVerticalShift.value = e.target.value;
+      renderCanvas();
+    });
+
+    mobileVerticalShift.addEventListener('input', (e) => {
+      verticalShiftInput.value = e.target.value;
+      document.getElementById('verticalShiftVal').textContent = `${e.target.value}px`;
+      renderCanvas();
+    });
+
+    quranInput.addEventListener('input', renderCanvas);
+
+    audioUpload.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        audioPlaylist = [];
+        audioElement.src = URL.createObjectURL(file);
+        document.getElementById('audioFileName').textContent = file.name;
+        audioElement.onloadedmetadata = () => {
+          document.getElementById('totalTime').textContent = formatTime(audioElement.duration || 0);
+        };
+        audioElement.load();
+
+        // Same pre-warm trick as viewAyahAndAudio(): play muted, then
+        // immediately pause and rewind, right here in the click/change
+        // handler while we still have a user gesture. This means Play
+        // AND Export are both already warm and smooth from here on,
+        // instead of either of them having to spin up the pipeline
+        // for the first time themselves.
+        try {
+          await setupAudioPipeline();
+          if (monitorGainNode) monitorGainNode.gain.value = 0;
+          await audioElement.play();
+          audioElement.pause();
+          audioElement.currentTime = 0;
+          if (monitorGainNode) monitorGainNode.gain.value = 1;
+        } catch (err) {
+          if (monitorGainNode) monitorGainNode.gain.value = 1;
+        }
+      }
+    });
+
+    async function togglePlay() {
+      const playIcon = document.getElementById('playIcon');
+      if (isPlaying) {
+        audioElement.pause();
+        isPlaying = false;
+        playIcon.className = "fa-solid fa-play ml-0.5";
+      } else {
+        if (audioElement.src) {
+          await setupAudioPipeline();
+          await audioElement.play();
+        }
+        isPlaying = true;
+        playIcon.className = "fa-solid fa-pause";
+        drawLoop();
+      }
+    }
+
+    function drawLoop() {
+      if (!isPlaying) return;
+      renderCanvas();
+      if (audioElement.src) {
+        document.getElementById('currentTime').textContent = formatTime(audioElement.currentTime);
+      }
+      animationFrameId = requestAnimationFrame(drawLoop);
+    }
+
+    function formatTime(seconds) {
+      if (isNaN(seconds)) return "00:00";
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    async function setupAudioPipeline() {
+      const isFirstSetup = !audioCtx;
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioSourceNode = audioCtx.createMediaElementSource(audioElement);
+        audioDestNode = audioCtx.createMediaStreamDestination();
+        monitorGainNode = audioCtx.createGain();
+        recordGainNode = audioCtx.createGain();
+        audioSourceNode.connect(monitorGainNode);
+        monitorGainNode.connect(audioCtx.destination);
+        // The exported/recorded signal gets its own gain node, separate
+        // from the monitor path, so we can fade it in independently
+        // (see startExportProcess) without touching what you hear
+        // through your speakers.
+        audioSourceNode.connect(recordGainNode);
+        recordGainNode.connect(audioDestNode);
+      }
+      // A freshly created AudioContext starts "suspended" and resume() is async.
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+      if (isFirstSetup) {
+        // The first time the context/graph is created, the browser's audio
+        // render thread needs a brief moment to spin up. This only ever
+        // runs ONCE - the moment an ayah is loaded (viewAyahAndAudio) or a
+        // file is chosen (the upload handler), both of which pre-warm and
+        // pause immediately. By the time Play or Export is actually
+        // pressed, this has already happened and never runs again.
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+    }
+
+    async function startExportProcess() {
+      const modal = document.getElementById('exportModal');
+      const progressBar = document.getElementById('exportProgressBar');
+      const progressText = document.getElementById('exportProgressText');
+      
+      modal.classList.remove('hidden');
+      progressBar.style.width = '0%';
+      progressText.textContent = '0%';
+      isExporting = true;
+
+      const duration = audioElement.duration && !isNaN(audioElement.duration) ? audioElement.duration : 5.0;
+
+      const canvasStream = canvas.captureStream(0); // 0 = manual mode: WE decide exactly when a frame is captured, instead of an internal timer guessing
+      const videoTrack = canvasStream.getVideoTracks()[0];
+      const outputStream = new MediaStream();
+
+      canvasStream.getVideoTracks().forEach(track => outputStream.addTrack(track));
+
+      if (audioElement.src) {
+        try {
+          // The pipeline was already warmed up when the ayah/audio file
+          // was loaded (see viewAyahAndAudio / the upload handler above),
+          // so this is the same call togglePlay() makes - it's already
+          // smooth, nothing left to set up.
+          await setupAudioPipeline();
+          if (monitorGainNode) monitorGainNode.gain.value = 0; // mute live speaker output only, so it's not doubled during export
+          audioDestNode.stream.getAudioTracks().forEach(track => outputStream.addTrack(track));
+        } catch (err) {
+          console.warn("Audio pipeline capture error:", err);
+        }
+      }
+
+      // Your canvas renders at 1080x1920 @ 30fps - VP9 software encoding
+      // at that resolution, in real time, alongside redrawing Arabic
+      // text every single frame, is genuinely heavy on the CPU. If the
+      // encoder can't keep up with incoming frames in real time, frames
+      // back up/get dropped - which is exactly what a "hiccup" looks
+      // like. VP8 is a substantially cheaper software encoder at the
+      // same resolution/framerate and is far less likely to fall behind.
+      let mimeType = 'video/webm;codecs=vp8';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
+      }
+
+      activeRecorder = new MediaRecorder(outputStream, { mimeType, videoBitsPerSecond: 4000000 });
+      const chunks = [];
+
+      activeRecorder.ondataavailable = e => chunks.push(e.data);
+      activeRecorder.onstop = () => {
+        if (!isExporting) return;
+        const blob = new Blob(chunks, { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `GetAjr_Export_${Date.now()}.webm`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        if (monitorGainNode) monitorGainNode.gain.value = 1;
+
+        modal.classList.add('hidden');
+        isExporting = false;
+      };
+
+      if (audioElement.src) {
+        audioElement.currentTime = 0;
+      }
+
+      // Start recording and playback together - the same simple,
+      // un-delayed sequence togglePlay() already uses successfully.
+      // No artificial waits, no gain fades: the pipeline is already
+      // warm, so this is exactly as smooth as pressing Play.
+      activeRecorder.start();
+      if (audioElement.src) {
+        await audioElement.play();
+      }
+
+      // Render + capture is driven by requestAnimationFrame - the exact
+      // same, browser-paced mechanism drawLoop() already uses for smooth
+      // preview playback - instead of setInterval, which isn't tied to
+      // real screen refresh and can drift or bunch up under any brief
+      // main-thread delay (e.g. codec startup), producing a stutter.
+      // After every render we explicitly call videoTrack.requestFrame()
+      // so the recorder only ever gets a real, freshly-drawn frame -
+      // never a stale or duplicated one from an internal timer.
+      const startTime = performance.now();
+      const exportLoop = () => {
+        if (!isExporting) return;
+
+        const elapsed = (performance.now() - startTime) / 1000;
+        const progress = Math.min(Math.round((elapsed / duration) * 100), 100);
+
+        progressBar.style.width = `${progress}%`;
+        progressText.textContent = `${progress}%`;
+        renderCanvas();
+        videoTrack.requestFrame();
+
+        if (elapsed >= duration) {
+          if (audioElement.src) audioElement.pause();
+          if (activeRecorder && activeRecorder.state !== 'inactive') {
+            activeRecorder.stop();
+          }
+          return;
+        }
+        exportAnimFrameId = requestAnimationFrame(exportLoop);
+      };
+      exportAnimFrameId = requestAnimationFrame(exportLoop);
+    }
+
+    function openDonateModal() {
+      document.getElementById('donateModal').classList.remove('hidden');
+    }
+ 
+    function closeDonateModal() {
+      document.getElementById('donateModal').classList.add('hidden');
+    }
+ 
+    function cancelExportProcess() {
+      isExporting = false;
+      if (exportAnimFrameId) cancelAnimationFrame(exportAnimFrameId);
+      if (activeRecorder && activeRecorder.state !== 'inactive') {
+        activeRecorder.stop();
+      }
+      if (audioElement.src) audioElement.pause();
+      if (monitorGainNode) monitorGainNode.gain.value = 1;
+
+      const modal = document.getElementById('exportModal');
+      modal.classList.add('hidden');
+    }
+
+    // Init
+    populateReciterDropdown();
+    populateSurahDropdowns(2);
+    populateAyahDropdowns(2, 255);
+    fitCanvasSize();
+    document.fonts.ready.then(renderCanvas);
+  </script>
 </body>
 </html>
+
