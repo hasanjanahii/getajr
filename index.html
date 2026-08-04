@@ -41,11 +41,6 @@
   
   <style>
     html {
-      /* Fallback for browsers without dvh, then upgrade. Prevents the
-         classic mobile bug where 100vh is taller than the *visible*
-         viewport once the browser's address bar is on screen, which
-         pushes the bottom of the page out of reach and makes it look
-         like scrolling is broken/clipped. */
       height: 100vh;
       height: 100dvh;
     }
@@ -59,7 +54,6 @@
     .quran-font {
       font-family: 'Amiri Quran', 'Amiri', serif;
     }
-    /* Smooth mobile scrollbar */
     ::-webkit-scrollbar {
       width: 4px;
       height: 4px;
@@ -68,34 +62,15 @@
       background: rgba(99, 102, 241, 0.3);
       border-radius: 4px;
     }
-    /* Smooth, non-laggy scrolling on mobile: momentum scroll + prevent
-       scroll-chaining/rubber-band from bleeding into sibling elements
-       (this is what caused touches on the top bar to feel delayed while
-       scrolling elsewhere on the page). */
     #leftPanel, #rightPanel, #viewportContainer {
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       scroll-behavior: smooth;
     }
-    /* THE ACTUAL SCROLL FIX: these three panes each rely on their own
-       overflow-y-auto to scroll, but as flex children their default
-       min-height is "auto" (= their content's natural height), so a
-       tall panel just gets clipped by the parent's overflow-hidden
-       instead of scrolling internally. min-height:0 lets each panel
-       size to the space it's actually given, which is what makes its
-       own overflow-y-auto kick in. */
     #mainContainer, #leftPanel, #rightPanel, #viewportContainer {
       min-height: 0;
     }
-    /* Safe-area padding so content never sits under a notch / home
-       indicator / rounded corners on modern phones. */
     header {
-      /* Extra top padding so the header's own content (logo/buttons)
-         never sits under a phone status bar / camera cutout. iOS
-         reports env(safe-area-inset-top) reliably; many Android
-         browsers report 0 even when content is drawn edge-to-edge, so
-         we also guarantee a sensible minimum instead of relying on
-         env() alone. */
       padding-top: max(0.75rem, env(safe-area-inset-top));
     }
     @supports (padding: max(0px)) {
@@ -103,19 +78,12 @@
         padding-bottom: env(safe-area-inset-bottom);
       }
     }
-    /* backdrop-filter: blur is expensive to keep recompositing on mobile
-       GPUs, especially under scroll and next to the pulsing dot / live
-       canvas redraws. It's restored on desktop (lg) below. */
     @media (max-width: 1023px) {
       .mobile-no-blur {
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
       }
     }
-    /* Canvas preview box sizing, written as plain CSS (not a Tailwind
-       utility class) so the 9:16 / 16:9 shape is never at the mercy of
-       the Tailwind CDN's in-browser class compiler. The #id selector
-       also out-specifies any conflicting utility class. */
     #videoCanvas {
       width: auto;
       height: auto;
@@ -152,9 +120,9 @@
 
       <div class="h-5 lg:h-6 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 shrink-0"></div>
 
-      <button id="exportBtn" onclick="startExportProcess()" class="w-9 h-9 lg:w-auto lg:h-auto px-0 lg:px-5 py-0 lg:py-2.5 rounded-lg lg:rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition flex items-center justify-center lg:gap-2 shadow-lg shadow-indigo-950/50 shrink-0" title="Export">
+      <button id="exportBtn" onclick="startExportProcess()" class="w-9 h-9 lg:w-auto lg:h-auto px-0 lg:px-5 py-0 lg:py-2.5 rounded-lg lg:rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition flex items-center justify-center lg:gap-2 shadow-lg shadow-indigo-950/50 shrink-0" title="Export MP4">
         <i class="fa-solid fa-download text-base lg:text-sm"></i>
-        <span data-i18n="export" class="hidden lg:inline">Export</span>
+        <span data-i18n="export" class="hidden lg:inline">Export MP4</span>
       </button>
 
       <button id="donateBtn" onclick="openDonateModal()" class="w-9 h-9 lg:w-auto lg:h-auto px-0 lg:px-5 py-0 lg:py-2.5 rounded-lg lg:rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition flex items-center justify-center lg:gap-2 shadow-lg shadow-indigo-950/50 shrink-0" title="Donate">
@@ -180,7 +148,7 @@
   <!-- MAIN PROFESSIONAL EDITOR CONTAINER -->
   <div id="mainContainer" class="flex-1 flex overflow-hidden flex-col lg:flex-row relative">
     
-    <!-- LEFT PANEL: CANVAS & VISUALS (Desktop Sidebar / Mobile Tab) -->
+    <!-- LEFT PANEL: CANVAS & VISUALS -->
     <aside id="leftPanel" class="w-full lg:w-[380px] flex-1 lg:flex-none min-h-0 border-r border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900/90 backdrop-blur-md mobile-no-blur flex-col shrink-0 z-10 hidden lg:flex order-2 lg:order-1 overflow-y-auto transition-colors duration-200">
       <div class="p-4 lg:p-5 border-b border-slate-200 dark:border-slate-800/80 flex items-center gap-2.5">
         <i class="fa-solid fa-palette text-indigo-500 text-base"></i>
@@ -188,7 +156,6 @@
       </div>
 
       <div class="p-5 flex flex-col gap-6">
-        <!-- Canvas Aspect Ratio -->
         <div class="flex flex-col gap-2.5">
           <label class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="formatLabel">Video Dimensions</label>
           <div class="grid grid-cols-2 gap-2.5">
@@ -203,7 +170,6 @@
           </div>
         </div>
 
-        <!-- Color Customization -->
         <div class="flex flex-col gap-3 pt-3 border-t border-slate-200 dark:border-slate-800/80">
           <label class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="colorsLabel">Canvas Palette</label>
           
@@ -226,9 +192,7 @@
           </div>
         </div>
 
-        <!-- Text Sizing, Line Spacing & Vertical Shift Controls -->
         <div class="flex flex-col gap-5 pt-3 border-t border-slate-200 dark:border-slate-800/80">
-          <!-- Font Size Slider -->
           <div class="flex flex-col gap-2">
             <div class="flex justify-between items-center">
               <label for="fontSize" class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="fontSizeLabel">Font Size</label>
@@ -237,7 +201,6 @@
             <input type="range" id="fontSize" min="28" max="110" value="64" class="w-full accent-indigo-500 bg-slate-200 dark:bg-slate-800 rounded-lg h-2 cursor-pointer">
           </div>
 
-          <!-- Line Spacing Slider -->
           <div class="flex flex-col gap-2">
             <div class="flex justify-between items-center">
               <label for="lineSpacing" class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="lineSpacingLabel">Line Spacing</label>
@@ -246,7 +209,6 @@
             <input type="range" id="lineSpacing" min="1.0" max="3.0" step="0.05" value="1.85" class="w-full accent-indigo-500 bg-slate-200 dark:bg-slate-800 rounded-lg h-2 cursor-pointer">
           </div>
 
-          <!-- Vertical Position Shift Slider -->
           <div class="flex flex-col gap-2">
             <div class="flex justify-between items-center">
               <label for="verticalShift" class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="verticalShiftLabel">Vertical Position Shift</label>
@@ -256,7 +218,6 @@
           </div>
         </div>
 
-        <!-- Custom Audio Upload -->
         <div class="flex flex-col gap-2 pt-3 border-t border-slate-200 dark:border-slate-800/80 mb-6 lg:mb-0">
           <label class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="audioLabel">Custom Audio File (MP3/WAV)</label>
           <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 rounded-xl cursor-pointer bg-slate-50 dark:bg-slate-950/40 transition group">
@@ -266,22 +227,20 @@
             </div>
             <input type="file" id="audioUpload" accept="audio/*" class="hidden">
           </label>
-          <audio id="audioElement" crossorigin="anonymous" class="hidden"></audio>
+          <audio id="audioElement" preload="auto" crossorigin="anonymous" class="hidden"></audio>
         </div>
       </div>
     </aside>
 
-    <!-- CENTER PANEL: WORKSPACE STAGE & CANVAS PREVIEW (Main Stage) -->
+    <!-- CENTER PANEL: WORKSPACE STAGE & CANVAS PREVIEW -->
     <main id="viewportContainer" class="flex-1 bg-slate-100 dark:bg-slate-950 transition-colors duration-200 flex flex-col items-center lg:justify-center relative px-3 pt-2 pb-2 lg:p-6 select-none shrink-0 order-1 lg:order-2 h-full overflow-y-auto lg:overflow-hidden">
       
-      <!-- Video Canvas Stage Wrapper -->
       <div id="canvasWrapper" class="relative shadow-2xl rounded-3xl lg:rounded-2xl overflow-hidden flex items-center justify-center border border-slate-300 dark:border-slate-800/80 transition-all duration-200 bg-black leading-none my-auto">
         <canvas id="videoCanvas" width="1080" height="1920" style="aspect-ratio: 9 / 16;" class="w-auto h-auto object-contain block border-0 p-0 m-0"></canvas>
       </div>
 
       <!-- MOBILE-ONLY QUICK CONTROLS -->
       <div class="lg:hidden w-full max-w-xs flex flex-col gap-1.5 z-10 shrink-0 mt-1.5">
-        <!-- Font Size + Position Card -->
         <div class="bg-slate-900/95 border border-slate-800/80 rounded-2xl px-3 py-2.5 flex flex-col gap-2.5 backdrop-blur-md mobile-no-blur shadow-lg">
           <div class="flex items-center gap-2.5">
             <i class="fa-solid fa-text-height text-indigo-400 text-[11px] w-3.5 text-center shrink-0" title="Text Size"></i>
@@ -290,7 +249,6 @@
           <div class="flex items-center gap-2.5">
             <i class="fa-solid fa-arrows-up-down text-indigo-400 text-[11px] w-3.5 text-center shrink-0" title="Move Text Up/Down"></i>
             <input type="range" id="mobileVerticalShift" min="-300" max="300" value="0" class="w-full accent-indigo-500 bg-slate-800 h-1.5 rounded-lg">
-            <!-- Quick Format Swap Button -->
             <button onclick="toggleMobileFormat()" class="bg-slate-800/90 border border-slate-700/80 hover:bg-slate-700 text-slate-200 pl-2 pr-2.5 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1 active:scale-95 transition shrink-0">
               <i class="fa-solid fa-mobile-screen text-indigo-400 text-[11px]"></i>
               <span id="mobileFormatText">9:16</span>
@@ -298,21 +256,17 @@
           </div>
         </div>
 
-        <!-- MOBILE QUICK SURAH/AYAH CONTROLLER DOCK -->
         <div class="bg-slate-900/95 border border-slate-800/80 rounded-2xl p-2 flex items-center gap-1.5 backdrop-blur-md mobile-no-blur shadow-lg">
-          <!-- Surah Dropdown -->
           <div class="flex items-center gap-1 bg-slate-950/80 border border-slate-800/80 rounded-xl px-2 py-1.5 flex-1 min-w-0">
             <span class="text-[10px] font-bold text-slate-500 uppercase shrink-0">Surah</span>
             <select id="mSurahNum" onchange="syncSurahInput(this.value)" class="w-full bg-transparent text-xs font-bold text-slate-100 text-center focus:outline-none cursor-pointer"></select>
           </div>
 
-          <!-- Ayah Dropdown -->
           <div class="flex items-center gap-1 bg-slate-950/80 border border-slate-800/80 rounded-xl px-2 py-1.5 flex-1 min-w-0">
             <span class="text-[10px] font-bold text-slate-500 uppercase shrink-0">Ayah</span>
             <select id="mAyahNum" onchange="syncAyahInput(this.value)" class="w-full bg-transparent text-xs font-bold text-slate-100 text-center focus:outline-none cursor-pointer"></select>
           </div>
 
-          <!-- View Ayah Action Button -->
           <button onclick="viewAyahAndAudio()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-indigo-950/50 transition" title="View Ayah">
             <i class="fa-solid fa-right-to-bracket text-xs"></i>
           </button>
@@ -334,11 +288,10 @@
         </div>
       </div>
 
-      <!-- MOBILE EXPORT & DONATE BUTTONS (below the play/pause transport bar) -->
       <div class="lg:hidden w-full max-w-xs mb-1 flex items-center gap-2 z-10 shrink-0">
         <button onclick="startExportProcess()" class="flex-1 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition">
           <i class="fa-solid fa-download text-xs"></i>
-          <span data-i18n="export">Export</span>
+          <span data-i18n="export">Export MP4</span>
         </button>
         <button onclick="openDonateModal()" class="flex-1 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition">
           <i class="fa-solid fa-coins text-xs"></i>
@@ -356,7 +309,6 @@
 
       <div class="p-5 flex flex-col gap-6">
         
-        <!-- API Search Box -->
         <div class="bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-4 lg:p-5 flex flex-col gap-3.5 shadow-inner">
           <span class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
             <i class="fa-solid fa-magnifying-glass text-indigo-500 text-xs"></i>
@@ -374,7 +326,6 @@
             </div>
           </div>
 
-          <!-- Reciter Dropdown -->
           <div class="flex flex-col gap-1.5">
             <label class="text-xs font-semibold text-slate-500 dark:text-slate-400" data-i18n="reciterLabel">Select Reciter (EveryAyah.com)</label>
             <select id="reciterSelect" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-xs lg:text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition cursor-pointer">
@@ -389,7 +340,6 @@
           </div>
         </div>
 
-        <!-- Quran Text Editing Box -->
         <div class="flex flex-col gap-2">
           <div class="flex items-center justify-between">
             <label for="quranInput" class="text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200" data-i18n="textLabel">Ayah Script Box</label>
@@ -409,7 +359,7 @@
         <i class="fa-solid fa-circle-notch fa-spin"></i>
       </div>
       <div>
-        <h3 class="font-bold text-base text-slate-900 dark:text-slate-100" data-i18n="renderingTitle">Rendering Video</h3>
+        <h3 class="font-bold text-base text-slate-900 dark:text-slate-100" data-i18n="renderingTitle">Rendering MP4 Video</h3>
         <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" data-i18n="renderingSub">Encoding high-bitrate video. Please keep this tab active.</p>
       </div>
 
@@ -418,7 +368,6 @@
       </div>
       <span id="exportProgressText" class="text-xs font-mono font-bold text-indigo-400">0%</span>
 
-      <!-- Cancel Export Button -->
       <button onclick="cancelExportProcess()" class="mt-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-semibold text-xs transition flex items-center gap-2">
         <i class="fa-solid fa-xmark"></i>
         <span data-i18n="cancelExport">Cancel Export</span>
@@ -430,7 +379,6 @@
   <div id="donateModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center gap-5 relative transition-colors duration-200">
 
-      <!-- Close (X) Button -->
       <button onclick="closeDonateModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
         <i class="fa-solid fa-xmark"></i>
       </button>
@@ -464,7 +412,6 @@
   </div>
 
   <script>
-    // FIXED AND FULL EVERYAYAH.COM RECITERS CATALOG WITH DEFAULT NASSER AL QATAMI
     const EVERYAYAH_RECITERS = [
       { name: "Nasser Al Qatami", folder: "Nasser_Alqatami_128kbps" },
       { name: "Yasser Al-Dosari", folder: "Yasser_Ad-Dussary_128kbps" },
@@ -487,7 +434,6 @@
       { name: "Saood Ash-Shuraym", folder: "Shuraym_128kbps" }
     ];
 
-    // FULL 114-SURAH CATALOG: [Number, Name, Ayah Count] — standard Hafs/Uthmani numbering
     const SURAH_DATA = [
       {n:1,name:"Al-Fatihah",ayahs:7},{n:2,name:"Al-Baqarah",ayahs:286},{n:3,name:"Aal-E-Imran",ayahs:200},
       {n:4,name:"An-Nisa",ayahs:176},{n:5,name:"Al-Ma'idah",ayahs:120},{n:6,name:"Al-An'am",ayahs:165},
@@ -528,11 +474,8 @@
       {n:109,name:"Al-Kafirun",ayahs:6},{n:110,name:"An-Nasr",ayahs:3},{n:111,name:"Al-Masad",ayahs:5},
       {n:112,name:"Al-Ikhlas",ayahs:4},{n:113,name:"Al-Falaq",ayahs:5},{n:114,name:"An-Nas",ayahs:6}
     ];
-    // Track verses already shown by the Shuffle button this session, so
-    // it never repeats a verse until every verse in the Quran has come up.
     let shuffledVerses = new Set();
 
-    // State Variables
     let currentLang = 'en';
     let currentFormat = '9:16';
     let isPlaying = false;
@@ -540,19 +483,16 @@
     let audioPlaylist = [];
     let currentAudioIndex = 0;
 
-    // Persistent Web Audio API Nodes
     let audioCtx = null;
     let audioSourceNode = null;
     let audioDestNode = null;
     let monitorGainNode = null;
     let recordGainNode = null;
     
-    // Export state variables
     let activeRecorder = null;
     let exportAnimFrameId = null;
     let isExporting = false;
 
-    // DOM Elements
     const canvas = document.getElementById('videoCanvas');
     const ctx = canvas.getContext('2d');
     const quranInput = document.getElementById('quranInput');
@@ -566,11 +506,10 @@
     const verticalShiftInput = document.getElementById('verticalShift');
     const mobileVerticalShift = document.getElementById('mobileVerticalShift');
 
-    // Language Dictionary
     const translations = {
       en: {
         subtitle: "Quran Video Creator",
-        export: "Export",
+        export: "Export MP4",
         styleTitle: "Canvas & Visuals",
         formatLabel: "Video Dimensions",
         colorsLabel: "Canvas Palette",
@@ -591,8 +530,8 @@
         editable: "Directly Editable",
         tabPreview: "Studio",
         tabScript: "Script & Audio",
-        renderingTitle: "Rendering Video...",
-        renderingSub: "Encoding high-bitrate video. Please keep this tab active.",
+        renderingTitle: "Rendering MP4 Video...",
+        renderingSub: "Encoding high-bitrate MP4 video. Please keep this tab active.",
         cancelExport: "Cancel Export",
         donate: "Donate",
         donateTitle: "Support & Connect",
@@ -601,7 +540,7 @@
       },
       ar: {
         subtitle: "صانع فيديوهات القرآن",
-        export: "تصدير",
+        export: "تصدير MP4",
         styleTitle: "الأبعاد والتصميم",
         formatLabel: "أبعاد الفيديو",
         colorsLabel: "ألوان الفيديو",
@@ -622,7 +561,7 @@
         editable: "قابل للتعديل المباشر",
         tabPreview: "المعاينة",
         tabScript: "النص والصوت",
-        renderingTitle: "جاري تصدير الفيديو...",
+        renderingTitle: "جاري تصدير فيديو MP4...",
         renderingSub: "يتم إنشاء الفيديو بأعلى جودة. يرجى الانتظار.",
         cancelExport: "إلغاء التصدير",
         donate: "تبرع",
@@ -644,7 +583,6 @@
       });
     }
 
-    // Populate both the desktop and mobile Surah dropdowns with all 114 Surahs
     function populateSurahDropdowns(selectedSurah) {
       ['surahNum', 'mSurahNum'].forEach(id => {
         const select = document.getElementById(id);
@@ -659,7 +597,6 @@
       });
     }
 
-    // Populate both the desktop and mobile Ayah dropdowns for a given Surah
     function populateAyahDropdowns(surahNum, selectedAyah) {
       const surah = SURAH_DATA.find(s => s.n === parseInt(surahNum)) || SURAH_DATA[0];
       ['ayahNum', 'mAyahNum'].forEach(id => {
@@ -677,9 +614,6 @@
 
     quranInput.value = "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ";
 
-    // Sync dropdown values between Mobile and Desktop controls. Changing
-    // the Surah repopulates both Ayah dropdowns (Ayah count differs per
-    // Surah) and resets the Ayah selection to 1.
     function syncSurahInput(val) {
       const surahVal = parseInt(val);
       document.getElementById('surahNum').value = surahVal;
@@ -688,14 +622,10 @@
     }
 
     function syncAyahInput(val) {
-      document.getElementById('ayahNum').value = val;
-      document.getElementById('mAyahNum').value = val;
+      document.getElementById('surahNum').value = val;
+      document.getElementById('mSurahNum').value = val;
     }
 
-    // Pick a random verse from the entire Quran (weighted evenly across
-    // all ~6236 verses) that hasn't been shown yet this session, load its
-    // text + audio automatically. Once every verse has been shown, the
-    // "seen" list resets so shuffling never gets stuck.
     const TOTAL_VERSES = SURAH_DATA.reduce((sum, s) => sum + s.ayahs, 0);
     function shuffleVerse() {
       if (shuffledVerses.size >= TOTAL_VERSES) shuffledVerses.clear();
@@ -732,7 +662,6 @@
       document.getElementById('mobileFormatText').textContent = targetFormat;
     }
 
-    // SWITCH MOBILE TABS CLEANLY
     function switchMobileView(view) {
       const viewport = document.getElementById('viewportContainer');
       const left = document.getElementById('leftPanel');
@@ -767,12 +696,9 @@
         btnStyle.className = tabActive;
       }
 
-      // Reset scroll position to the top of the newly shown panel so
-      // switching tabs always starts the user at the top of that view.
       [viewport, left, right].forEach(el => { if (!el.classList.contains('hidden')) el.scrollTop = 0; });
     }
 
-    // COMBINED FETCH: TEXT & AUDIO
     async function viewAyahAndAudio() {
       const surahNumVal = document.getElementById('surahNum').value;
       const ayahInput = document.getElementById('ayahNum').value.trim();
@@ -785,7 +711,6 @@
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Loading...`;
 
       try {
-        // Fetch Text
         if (ayahInput.includes('-')) {
           const [start, end] = ayahInput.split('-');
           let combinedText = '';
@@ -802,15 +727,6 @@
         }
         renderCanvas();
 
-        // Fetch Audio - download each track FULLY into memory as a
-        // local blob before we ever set it as the audio source. The
-        // previous version pointed the <audio> element straight at
-        // the remote everyayah.com URL and let the browser stream it
-        // progressively - that progressive network buffering is what
-        // caused the stutter/hiccup right at the start of playback
-        // (and got baked into exports), especially noticeable on
-        // desktop. With a local blob URL, playback never has to wait
-        // on the network at all.
         const formattedSurah = String(surahNumVal).padStart(3, '0');
         const cleanFolder = encodeURIComponent(reciterFolder.replace(/\/$/, ''));
         const remoteUrls = [];
@@ -826,18 +742,21 @@
           remoteUrls.push(`https://everyayah.com/data/${cleanFolder}/${formattedSurah}${formattedAyah}.mp3`);
         }
 
-        // Release any blob URLs from a previous ayah before replacing them.
         audioPlaylist.forEach(url => { if (url.startsWith('blob:')) URL.revokeObjectURL(url); });
 
         audioPlaylist = [];
         currentAudioIndex = 0;
+
+        await setupAudioPipeline();
+
         for (const url of remoteUrls) {
           const audioRes = await fetch(url);
-          const audioBlob = await audioRes.blob();
+          const arrayBuffer = await audioRes.arrayBuffer();
+          await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+          const audioBlob = new Blob([arrayBuffer], { type: 'audio/mp3' });
           audioPlaylist.push(URL.createObjectURL(audioBlob));
         }
 
-        audioElement.crossOrigin = "anonymous";
         audioElement.src = audioPlaylist[0];
 
         audioElement.onloadedmetadata = () => {
@@ -847,28 +766,6 @@
 
         audioElement.load();
 
-        // Fully prime BOTH the Web Audio graph and the <audio>
-        // element's own playback pipeline right now, while we're
-        // still inside a real click handler. Warming up only the
-        // AudioContext (as before) wasn't enough - the <audio>
-        // element itself still had to spin up its decode/output
-        // pipeline the first time play() was called, which is what
-        // made the first press of Play unreliable/silent and needed
-        // a second press. Here we actually start playback (muted),
-        // then immediately pause and rewind, so everything is fully
-        // warm and the next real Play press starts instantly.
-        try {
-          await setupAudioPipeline();
-          if (monitorGainNode) monitorGainNode.gain.value = 0;
-          await audioElement.play();
-          audioElement.pause();
-          audioElement.currentTime = 0;
-          if (monitorGainNode) monitorGainNode.gain.value = 1;
-        } catch (pipelineErr) {
-          if (monitorGainNode) monitorGainNode.gain.value = 1;
-          // Non-fatal: togglePlay() will retry pipeline/playback setup itself.
-        }
-
       } catch (err) {
         alert("Could not load verse audio. Please check your internet connection.");
       } finally {
@@ -877,7 +774,6 @@
       }
     }
 
-    // Chain audio tracks sequentially
     audioElement.onended = () => {
       if (audioPlaylist.length > 1 && currentAudioIndex < audioPlaylist.length - 1) {
         currentAudioIndex++;
@@ -901,40 +797,33 @@
       });
     }
 
-    // GLITCH-FREE DARK MODE TOGGLE
     function toggleTheme() {
       document.documentElement.classList.toggle('dark');
     }
 
     function fitCanvasSize() {
-      // Explicitly compute the on-screen CSS pixel box for the canvas in
-      // JS (rather than leaning on CSS max-width/max-height + intrinsic
-      // aspect ratio, which some mobile browsers resolve inconsistently
-      // and can end up wide/short instead of a true tall 9:16). We pick
-      // whichever of "fit to width" or "fit to height" is smaller, so the
-      // canvas is always the exact aspect ratio and always fits on screen.
       const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
       const ratioW = currentFormat === '9:16' ? 9 : 16;
       const ratioH = currentFormat === '9:16' ? 16 : 9;
       const viewportH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
       const viewportW = window.visualViewport ? window.visualViewport.width : window.innerWidth;
- 
+
       const maxW = isDesktop ? viewportW * 0.80 : viewportW * 0.94;
       const maxH = isDesktop ? viewportH * 0.60 : viewportH * 0.66;
- 
+
       let w = maxW;
       let h = w * (ratioH / ratioW);
       if (h > maxH) {
         h = maxH;
         w = h * (ratioW / ratioH);
       }
- 
+
       canvas.style.width = `${Math.round(w)}px`;
       canvas.style.height = `${Math.round(h)}px`;
     }
     window.addEventListener('resize', fitCanvasSize);
     window.addEventListener('orientationchange', fitCanvasSize);
- 
+
     function setFormat(format) {
       currentFormat = format;
       const btn916 = document.getElementById('btn916');
@@ -1005,7 +894,6 @@
       }
     }
 
-    // Input listeners & sync
     bgColorInput.addEventListener('input', (e) => {
       document.getElementById('bgColorVal').textContent = e.target.value.toUpperCase();
       renderCanvas();
@@ -1051,29 +939,17 @@
       const file = e.target.files[0];
       if (file) {
         audioPlaylist = [];
+        await setupAudioPipeline();
+        
+        const arrayBuffer = await file.arrayBuffer();
+        await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+
         audioElement.src = URL.createObjectURL(file);
         document.getElementById('audioFileName').textContent = file.name;
         audioElement.onloadedmetadata = () => {
           document.getElementById('totalTime').textContent = formatTime(audioElement.duration || 0);
         };
         audioElement.load();
-
-        // Same pre-warm trick as viewAyahAndAudio(): play muted, then
-        // immediately pause and rewind, right here in the click/change
-        // handler while we still have a user gesture. This means Play
-        // AND Export are both already warm and smooth from here on,
-        // instead of either of them having to spin up the pipeline
-        // for the first time themselves.
-        try {
-          await setupAudioPipeline();
-          if (monitorGainNode) monitorGainNode.gain.value = 0;
-          await audioElement.play();
-          audioElement.pause();
-          audioElement.currentTime = 0;
-          if (monitorGainNode) monitorGainNode.gain.value = 1;
-        } catch (err) {
-          if (monitorGainNode) monitorGainNode.gain.value = 1;
-        }
       }
     });
 
@@ -1111,7 +987,6 @@
     }
 
     async function setupAudioPipeline() {
-      const isFirstSetup = !audioCtx;
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         audioSourceNode = audioCtx.createMediaElementSource(audioElement);
@@ -1120,25 +995,11 @@
         recordGainNode = audioCtx.createGain();
         audioSourceNode.connect(monitorGainNode);
         monitorGainNode.connect(audioCtx.destination);
-        // The exported/recorded signal gets its own gain node, separate
-        // from the monitor path, so we can fade it in independently
-        // (see startExportProcess) without touching what you hear
-        // through your speakers.
         audioSourceNode.connect(recordGainNode);
         recordGainNode.connect(audioDestNode);
       }
-      // A freshly created AudioContext starts "suspended" and resume() is async.
       if (audioCtx.state === 'suspended') {
         await audioCtx.resume();
-      }
-      if (isFirstSetup) {
-        // The first time the context/graph is created, the browser's audio
-        // render thread needs a brief moment to spin up. This only ever
-        // runs ONCE - the moment an ayah is loaded (viewAyahAndAudio) or a
-        // file is chosen (the upload handler), both of which pre-warm and
-        // pause immediately. By the time Play or Export is actually
-        // pressed, this has already happened and never runs again.
-        await new Promise(resolve => setTimeout(resolve, 300));
       }
     }
 
@@ -1154,7 +1015,7 @@
 
       const duration = audioElement.duration && !isNaN(audioElement.duration) ? audioElement.duration : 5.0;
 
-      const canvasStream = canvas.captureStream(0); // 0 = manual mode: WE decide exactly when a frame is captured, instead of an internal timer guessing
+      const canvasStream = canvas.captureStream(0);
       const videoTrack = canvasStream.getVideoTracks()[0];
       const outputStream = new MediaStream();
 
@@ -1162,43 +1023,23 @@
 
       if (audioElement.src) {
         try {
-          // The pipeline was already warmed up when the ayah/audio file
-          // was loaded (see viewAyahAndAudio / the upload handler above),
-          // so this is the same call togglePlay() makes - it's already
-          // smooth, nothing left to set up.
           await setupAudioPipeline();
-          if (monitorGainNode) monitorGainNode.gain.value = 0; // mute live speaker output only, so it's not doubled during export
-          audioDestNode.stream.getAudioTracks().forEach(track => outputStream.addTrack(track));
+          if (monitorGainNode) monitorGainNode.gain.value = 0;
+          audioDestNode.stream.getAudioTracks().forEach(track => {
+            track.enabled = true;
+            outputStream.addTrack(track);
+          });
         } catch (err) {
           console.warn("Audio pipeline capture error:", err);
         }
       }
 
-      // Your canvas renders at 1080x1920 @ 30fps - VP9 software encoding
-      // at that resolution, in real time, alongside redrawing Arabic
-      // text every single frame, is genuinely heavy on the CPU. If the
-      // encoder can't keep up with incoming frames in real time, frames
-      // back up/get dropped - which is exactly what a "hiccup" looks
-      // like. VP8 is a substantially cheaper software encoder at the
-      // same resolution/framerate and is far less likely to fall behind.
-      //
-      // Prefer recording straight to MP4 (H.264 + AAC) so the download
-      // doesn't need any conversion. Chrome (recent versions) and Safari
-      // both support this natively via MediaRecorder; we fall back to
-      // WebM only on browsers that don't.
-      const mp4Candidates = [
-        'video/mp4;codecs=avc1,mp4a.40.2',
-        'video/mp4;codecs=avc1',
-        'video/mp4'
-      ];
-      let mimeType = mp4Candidates.find(t => MediaRecorder.isTypeSupported(t)) || null;
-      let fileExt = 'mp4';
-      if (!mimeType) {
-        mimeType = 'video/webm;codecs=vp8';
-        if (!MediaRecorder.isTypeSupported(mimeType)) {
-          mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
-        }
-        fileExt = 'webm';
+      let mimeType = 'video/mp4;codecs=avc1.42E01E,mp4a.40.2';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'video/mp4';
+      }
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp8') ? 'video/webm;codecs=vp8' : 'video/webm';
       }
 
       activeRecorder = new MediaRecorder(outputStream, { mimeType, videoBitsPerSecond: 4000000 });
@@ -1207,11 +1048,11 @@
       activeRecorder.ondataavailable = e => chunks.push(e.data);
       activeRecorder.onstop = () => {
         if (!isExporting) return;
-        const blob = new Blob(chunks, { type: mimeType });
+        const blob = new Blob(chunks, { type: 'video/mp4' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `GetAjr_Export_${Date.now()}.${fileExt}`;
+        a.download = `GetAjr_Quran_Video_${Date.now()}.mp4`;
         a.click();
         URL.revokeObjectURL(url);
 
@@ -1225,36 +1066,16 @@
         audioElement.currentTime = 0;
       }
 
-      // Start recording, then PRIME the encoder with a couple of throwaway
-      // frames before playback begins. Both the video encoder and the
-      // audio track need a brief moment to actually start flowing data
-      // after start()/play() are called - if real content begins during
-      // that moment, the first ~1s of the muxed file ends up thin or
-      // misaligned between audio and video, which plays back as a cut or
-      // lag right at the start (most visible on desktop, where the VP8/
-      // H.264 encoder has more work to do per frame). Priming "absorbs"
-      // that startup cost on frames nobody sees, so the real content
-      // starts on an already-warm pipeline.
-      activeRecorder.start();
-      renderCanvas();
-      videoTrack.requestFrame();
-      await new Promise(r => requestAnimationFrame(r));
-      renderCanvas();
-      videoTrack.requestFrame();
-      await new Promise(r => requestAnimationFrame(r));
+      // Start recorder first to prepare encoder buffers
+      activeRecorder.start(100);
 
-      if (audioElement.src) {
+      // Short 150ms priming delay before starting audio playback to avoid first-second drop
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      if (audioElement.src && isExporting) {
         await audioElement.play();
       }
 
-      // Render + capture is driven by requestAnimationFrame - the exact
-      // same, browser-paced mechanism drawLoop() already uses for smooth
-      // preview playback - instead of setInterval, which isn't tied to
-      // real screen refresh and can drift or bunch up under any brief
-      // main-thread delay (e.g. codec startup), producing a stutter.
-      // After every render we explicitly call videoTrack.requestFrame()
-      // so the recorder only ever gets a real, freshly-drawn frame -
-      // never a stale or duplicated one from an internal timer.
       const startTime = performance.now();
       const exportLoop = () => {
         if (!isExporting) return;
@@ -1267,7 +1088,7 @@
         renderCanvas();
         videoTrack.requestFrame();
 
-        if (elapsed >= duration) {
+        if (elapsed >= (duration + 0.2)) {
           if (audioElement.src) audioElement.pause();
           if (activeRecorder && activeRecorder.state !== 'inactive') {
             activeRecorder.stop();
@@ -1282,11 +1103,11 @@
     function openDonateModal() {
       document.getElementById('donateModal').classList.remove('hidden');
     }
- 
+
     function closeDonateModal() {
       document.getElementById('donateModal').classList.add('hidden');
     }
- 
+
     function cancelExportProcess() {
       isExporting = false;
       if (exportAnimFrameId) cancelAnimationFrame(exportAnimFrameId);
@@ -1300,7 +1121,6 @@
       modal.classList.add('hidden');
     }
 
-    // Init
     populateReciterDropdown();
     populateSurahDropdowns(2);
     populateAyahDropdowns(2, 255);
@@ -1309,4 +1129,3 @@
   </script>
 </body>
 </html>
-
