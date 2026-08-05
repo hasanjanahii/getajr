@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" class="">
+<html lang="en" dir="ltr" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#181330">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -24,9 +24,15 @@
               600: '#4f46e5',
               700: '#4338ca',
             },
-            slatebg: '#090d16',
-            panelbg: '#0f172a',
-            cardbg: '#1e293b'
+            slate: {
+              950: '#0d0a1c',
+              900: '#181330',
+              800: '#241c46',
+              700: '#372a63',
+            },
+            slatebg: '#0d0a1c',
+            panelbg: '#181330',
+            cardbg: '#241c46'
           }
         }
       }
@@ -43,6 +49,23 @@
     html {
       height: 100vh;
       height: 100dvh;
+    }
+    html.dark {
+      color-scheme: dark;
+    }
+    html:not(.dark) {
+      color-scheme: light;
+    }
+    html.dark select {
+      color-scheme: dark;
+    }
+    html.dark select option {
+      background-color: #181330;
+      color: #f1f5f9;
+    }
+    html:not(.dark) select option {
+      background-color: #ffffff;
+      color: #0f172a;
     }
     body {
       font-family: 'Plus Jakarta Sans', 'Noto Naskh Arabic', sans-serif;
@@ -259,26 +282,22 @@
         <div class="bg-slate-900/95 border border-slate-800/80 rounded-2xl p-2 flex items-center gap-1.5 backdrop-blur-md mobile-no-blur shadow-lg">
           <div class="flex items-center gap-1 bg-slate-950/80 border border-slate-800/80 rounded-xl px-2 py-1.5 flex-1 min-w-0">
             <span class="text-[10px] font-bold text-slate-500 uppercase shrink-0">Surah</span>
-            <select id="mSurahNum" onchange="syncSurahInput(this.value)" class="w-full bg-transparent text-xs font-bold text-slate-100 text-center focus:outline-none cursor-pointer"></select>
+            <select id="mSurahNum" onchange="syncSurahInput(this.value); mobileAutoLoadVerse();" style="color-scheme: dark;" class="w-full bg-transparent text-xs font-bold text-slate-100 text-center focus:outline-none cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap"></select>
           </div>
  
           <div class="flex items-center gap-1 bg-slate-950/80 border border-slate-800/80 rounded-xl px-2 py-1.5 flex-1 min-w-0">
             <span class="text-[10px] font-bold text-slate-500 uppercase shrink-0">Ayah</span>
-            <select id="mAyahNum" onchange="syncAyahInput(this.value)" class="w-full bg-transparent text-xs font-bold text-slate-100 text-center focus:outline-none cursor-pointer"></select>
+            <select id="mAyahNum" onchange="syncAyahInput(this.value); mobileAutoLoadVerse();" style="color-scheme: dark;" class="w-full bg-transparent text-xs font-bold text-slate-100 text-center focus:outline-none cursor-pointer"></select>
           </div>
- 
-          <button onclick="viewAyahAndAudio()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-indigo-950/50 transition" title="View Ayah">
-            <i class="fa-solid fa-right-to-bracket text-xs"></i>
-          </button>
         </div>
       </div>
  
       <!-- Professional Transport Bar -->
       <div class="my-1 lg:mt-5 bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 px-6 lg:px-8 py-2 lg:py-2.5 rounded-full shadow-2xl backdrop-blur-md mobile-no-blur flex items-center gap-5 lg:gap-8 z-10 shrink-0 transition-colors duration-200">
-        <button id="playBtn" onclick="togglePlay()" class="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center text-xs lg:text-sm transition shadow-lg shadow-indigo-950/30">
+        <button id="playBtn" onclick="togglePlay()" class="w-14 h-14 lg:w-10 lg:h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center text-lg lg:text-sm transition shadow-lg shadow-indigo-950/30 active:scale-95">
           <i id="playIcon" class="fa-solid fa-play ml-0.5"></i>
         </button>
-        <button id="shuffleBtn" onclick="shuffleVerse()" class="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-indigo-500 dark:text-indigo-400 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs lg:text-sm transition shadow-sm active:scale-95" title="Shuffle: Random Verse">
+        <button id="shuffleBtn" onclick="shuffleVerse()" class="w-12 h-12 lg:w-10 lg:h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-indigo-500 dark:text-indigo-400 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-base lg:text-sm transition shadow-sm active:scale-95" title="Shuffle: Random Verse">
           <i id="shuffleIcon" class="fa-solid fa-shuffle"></i>
         </button>
         <div class="flex items-center gap-2 text-xs lg:text-sm font-mono font-semibold text-slate-600 dark:text-slate-400">
@@ -288,13 +307,13 @@
         </div>
       </div>
  
-      <div class="lg:hidden w-full max-w-xs mb-1 flex items-center gap-2 z-10 shrink-0">
-        <button onclick="startExportProcess()" class="flex-1 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition">
-          <i class="fa-solid fa-download text-xs"></i>
+      <div class="lg:hidden w-full max-w-xs mb-5 flex items-center gap-2.5 z-10 shrink-0">
+        <button onclick="startExportProcess()" class="flex-1 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition">
+          <i class="fa-solid fa-download text-sm"></i>
           <span data-i18n="export">Export MP4</span>
         </button>
-        <button onclick="openDonateModal()" class="flex-1 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition">
-          <i class="fa-solid fa-coins text-xs"></i>
+        <button onclick="openDonateModal()" class="flex-1 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition">
+          <i class="fa-solid fa-coins text-sm"></i>
           <span data-i18n="donate">Donate</span>
         </button>
       </div>
@@ -318,17 +337,17 @@
           <div class="grid grid-cols-2 gap-2.5">
             <div>
               <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block" data-i18n="surahLabel">Surah No.</label>
-              <select id="surahNum" onchange="syncSurahInput(this.value)" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-xs lg:text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition cursor-pointer"></select>
+              <select id="surahNum" onchange="syncSurahInput(this.value)" style="color-scheme: dark;" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-xs lg:text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition cursor-pointer"></select>
             </div>
             <div>
               <label class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 block" data-i18n="ayahLabel">Ayah No.</label>
-              <select id="ayahNum" onchange="syncAyahInput(this.value)" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-xs lg:text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition cursor-pointer"></select>
+              <select id="ayahNum" onchange="syncAyahInput(this.value)" style="color-scheme: dark;" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-xs lg:text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition cursor-pointer"></select>
             </div>
           </div>
  
           <div class="flex flex-col gap-1.5">
             <label class="text-xs font-semibold text-slate-500 dark:text-slate-400" data-i18n="reciterLabel">Select Reciter (EveryAyah.com)</label>
-            <select id="reciterSelect" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-xs lg:text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition cursor-pointer">
+            <select id="reciterSelect" style="color-scheme: dark;" class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-2.5 text-xs lg:text-sm font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition cursor-pointer">
             </select>
           </div>
  
@@ -493,6 +512,12 @@
     let exportAnimFrameId = null;
     let isExporting = false;
  
+    // Guards against overlapping viewAyahAndAudio() calls (e.g. rapid Surah/Ayah
+    // changes on mobile) — without this, two in-flight fetches can race and leave
+    // the Play button stuck showing its loading spinner, requiring a second click.
+    let isFetchingVerse = false;
+    let pendingVerseRefetch = false;
+ 
     const canvas = document.getElementById('videoCanvas');
     const ctx = canvas.getContext('2d');
     const quranInput = document.getElementById('quranInput');
@@ -622,9 +647,19 @@
     }
  
     function syncAyahInput(val) {
-      document.getElementById('surahNum').value = val;
-      document.getElementById('mSurahNum').value = val;
+      document.getElementById('ayahNum').value = val;
+      document.getElementById('mAyahNum').value = val;
     }
+ 
+    // On mobile there's no separate "View Ayah" button anymore — as soon as the
+    // person picks a Surah/Ayah, we fetch the verse text + audio in the
+    // background so the transport bar's Play button is immediately ready to use.
+    let mobileAutoLoadTimer = null;
+    function mobileAutoLoadVerse() {
+      clearTimeout(mobileAutoLoadTimer);
+      mobileAutoLoadTimer = setTimeout(() => { viewAyahAndAudio(); }, 120);
+    }
+ 
  
     const TOTAL_VERSES = SURAH_DATA.reduce((sum, s) => sum + s.ayahs, 0);
     function shuffleVerse() {
@@ -704,58 +739,62 @@
       const ayahInput = document.getElementById('ayahNum').value.trim();
       const reciterFolder = document.getElementById('reciterSelect').value;
       const btn = document.getElementById('fetchVerseBtn');
+      const playBtn = document.getElementById('playBtn');
+      const playIcon = document.getElementById('playIcon');
  
       if (!surahNumVal || !ayahInput) return;
  
+      // If a fetch is already running (e.g. the person changed Surah then Ayah in
+      // quick succession), don't start a second one in parallel — just note that
+      // a refetch is needed and let the in-flight call pick up the latest values
+      // once it finishes. This is what previously caused the Play button to get
+      // stuck showing its loading spinner until clicked/triggered a second time.
+      if (isFetchingVerse) {
+        pendingVerseRefetch = true;
+        return;
+      }
+      isFetchingVerse = true;
+ 
       btn.disabled = true;
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Loading...`;
+      playBtn.disabled = true;
+      playIcon.className = "fa-solid fa-spinner fa-spin";
  
       try {
-        if (ayahInput.includes('-')) {
-          const [start, end] = ayahInput.split('-');
-          let combinedText = '';
-          for (let i = parseInt(start); i <= parseInt(end); i++) {
-            const res = await fetch(`https://api.quran.com/api/v4/verses/by_key/${surahNumVal}:${i}?fields=text_uthmani`);
-            const data = await res.json();
-            if (data.verse) combinedText += data.verse.text_uthmani + ' ﴿' + i + '﴾ ';
-          }
-          quranInput.value = combinedText.trim();
+        const isRange = ayahInput.includes('-');
+        let ayahNums = [];
+        if (isRange) {
+          const [start, end] = ayahInput.split('-').map(n => parseInt(n, 10));
+          for (let i = start; i <= end; i++) ayahNums.push(i);
         } else {
-          const res = await fetch(`https://api.quran.com/api/v4/verses/by_key/${surahNumVal}:${ayahInput}?fields=text_uthmani`);
-          const data = await res.json();
-          if (data.verse) quranInput.value = data.verse.text_uthmani;
+          ayahNums = [parseInt(ayahInput, 10)];
         }
-        renderCanvas();
  
         const formattedSurah = String(surahNumVal).padStart(3, '0');
         const cleanFolder = encodeURIComponent(reciterFolder.replace(/\/$/, ''));
-        const remoteUrls = [];
  
-        if (ayahInput.includes('-')) {
-          const [start, end] = ayahInput.split('-');
-          for (let i = parseInt(start); i <= parseInt(end); i++) {
+        // Fetch the verse text and the recitation audio at the same time (they're
+        // independent), and fetch every ayah in a range concurrently rather than
+        // one-by-one — this is what makes loading feel instant instead of buffering.
+        const [textResults, audioBuffers] = await Promise.all([
+          Promise.all(ayahNums.map(i =>
+            fetch(`https://api.quran.com/api/v4/verses/by_key/${surahNumVal}:${i}?fields=text_uthmani`).then(r => r.json())
+          )),
+          setupAudioPipeline().then(() => Promise.all(ayahNums.map(i => {
             const formattedAyah = String(i).padStart(3, '0');
-            remoteUrls.push(`https://everyayah.com/data/${cleanFolder}/${formattedSurah}${formattedAyah}.mp3`);
-          }
-        } else {
-          const formattedAyah = String(ayahInput).padStart(3, '0');
-          remoteUrls.push(`https://everyayah.com/data/${cleanFolder}/${formattedSurah}${formattedAyah}.mp3`);
-        }
+            const url = `https://everyayah.com/data/${cleanFolder}/${formattedSurah}${formattedAyah}.mp3`;
+            return fetch(url).then(res => res.arrayBuffer());
+          })))
+        ]);
+ 
+        quranInput.value = isRange
+          ? textResults.map((data, idx) => data.verse ? data.verse.text_uthmani + ' ﴿' + ayahNums[idx] + '﴾ ' : '').join('').trim()
+          : (textResults[0].verse ? textResults[0].verse.text_uthmani : '');
+        renderCanvas();
  
         audioPlaylist.forEach(url => { if (url.startsWith('blob:')) URL.revokeObjectURL(url); });
- 
-        audioPlaylist = [];
+        audioPlaylist = audioBuffers.map(buf => URL.createObjectURL(new Blob([buf], { type: 'audio/mp3' })));
         currentAudioIndex = 0;
- 
-        await setupAudioPipeline();
- 
-        for (const url of remoteUrls) {
-          const audioRes = await fetch(url);
-          const arrayBuffer = await audioRes.arrayBuffer();
-          await audioCtx.decodeAudioData(arrayBuffer.slice(0));
-          const audioBlob = new Blob([arrayBuffer], { type: 'audio/mp3' });
-          audioPlaylist.push(URL.createObjectURL(audioBlob));
-        }
  
         audioElement.src = audioPlaylist[0];
  
@@ -771,6 +810,13 @@
       } finally {
         btn.disabled = false;
         btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> <span data-i18n="btnFetchText">${translations[currentLang].btnFetchText}</span>`;
+        playBtn.disabled = false;
+        if (!isPlaying) playIcon.className = "fa-solid fa-play ml-0.5";
+        isFetchingVerse = false;
+        if (pendingVerseRefetch) {
+          pendingVerseRefetch = false;
+          viewAyahAndAudio();
+        }
       }
     }
  
@@ -797,8 +843,16 @@
       });
     }
  
+    function applySelectColorScheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      document.querySelectorAll('select').forEach(sel => {
+        sel.style.colorScheme = isDark ? 'dark' : 'light';
+      });
+    }
+ 
     function toggleTheme() {
       document.documentElement.classList.toggle('dark');
+      applySelectColorScheme();
     }
  
     function fitCanvasSize() {
@@ -940,9 +994,6 @@
       if (file) {
         audioPlaylist = [];
         await setupAudioPipeline();
-        
-        const arrayBuffer = await file.arrayBuffer();
-        await audioCtx.decodeAudioData(arrayBuffer.slice(0));
  
         audioElement.src = URL.createObjectURL(file);
         document.getElementById('audioFileName').textContent = file.name;
@@ -1170,6 +1221,7 @@
     populateReciterDropdown();
     populateSurahDropdowns(2);
     populateAyahDropdowns(2, 255);
+    applySelectColorScheme();
     fitCanvasSize();
     document.fonts.ready.then(renderCanvas);
   </script>
