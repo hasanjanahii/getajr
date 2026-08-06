@@ -462,26 +462,21 @@
   </div>
  
   <script>
+    // Local mirror of the Quran text (Uthmani), hosted on our own domain instead
+    // of calling api.quran.com per ayah. Fetched once and cached in memory.
+    let quranTextDataPromise = null;
+    function loadQuranTextData() {
+      if (!quranTextDataPromise) {
+        quranTextDataPromise = fetch('/quran-text.json').then(r => r.json());
+      }
+      return quranTextDataPromise;
+    }
+ 
     const EVERYAYAH_RECITERS = [
       { name: "Nasser Al Qatami", folder: "Nasser_Alqatami_128kbps" },
       { name: "Yasser Al-Dosari", folder: "Yasser_Ad-Dussary_128kbps" },
-      { name: "Mishary Rashid Alafasy", folder: "Alafasy_128kbps" },
-      { name: "Maher Al Muaiqly", folder: "MaherAlMuaiqly128kbps" },
-      { name: "Abdul Basit (Murattal)", folder: "Abdul_Basit_Murattal_192kbps" },
-      { name: "Abdul Basit (Mujawwad)", folder: "Abdul_Basit_Mujawwad_128kbps" },
-      { name: "Abdullah Juhaynee", folder: "Abdullaah_3awwaad_Al-Juhaynee_128kbps" },
-      { name: "Abdullah Basfar", folder: "Abdullah_Basfar_192kbps" },
-      { name: "Abdurrahmaan As-Sudais", folder: "Abdurrahmaan_As-Sudais_192kbps" },
-      { name: "Abu Bakr Ash-Shaatree", folder: "Abu_Bakr_Ash-Shaatree_128kbps" },
-      { name: "Ahmed Al-Ajamy", folder: "Ahmed_ibn_Ali_al-Ajamy_128kbps_ketaballah.net" },
       { name: "Ali Jaber", folder: "Ali_Jaber_64kbps" },
-      { name: "Fares Abbad", folder: "Fares_Abbad_64kbps" },
-      { name: "Hani Rifai", folder: "Hani_Rifai_192kbps" },
-      { name: "Mahmoud Al-Husary", folder: "Husary_128kbps" },
-      { name: "Minshawy (Murattal)", folder: "Minshawy_Murattal_128kbps" },
-      { name: "Minshawy (Mujawwad)", folder: "Minshawy_Mujawwad_192kbps" },
-      { name: "Saad Al-Ghamdi", folder: "Ghamadi_40kbps" },
-      { name: "Saood Ash-Shuraym", folder: "Shuraym_128kbps" }
+      { name: "Mahmoud Al-Husary", folder: "Husary_128kbps" }
     ];
  
     const SURAH_DATA = [
@@ -841,16 +836,19 @@
         // button and Play icon stuck spinning. The pipeline itself is only needed
         // once audio actually plays, which togglePlay()/startExportProcess() already
         // set up right before playback, behind a real click.
-        const [textResults, audioBuffers] = await Promise.all([
-          Promise.all(ayahNums.map(i =>
-            fetch(`https://api.quran.com/api/v4/verses/by_key/${surahNumVal}:${i}?fields=text_uthmani`).then(r => r.json())
-          )),
+        const [quranTextData, audioBuffers] = await Promise.all([
+          loadQuranTextData(),
           Promise.all(ayahNums.map(i => {
             const formattedAyah = String(i).padStart(3, '0');
-            const url = `https://everyayah.com/data/${cleanFolder}/${formattedSurah}${formattedAyah}.mp3`;
+            const url = `https://audio.getajr.com/${cleanFolder}/${formattedSurah}${formattedAyah}.mp3`;
             return fetch(url).then(res => res.arrayBuffer());
           }))
         ]);
+ 
+        const textResults = ayahNums.map(i => {
+          const text = quranTextData[`${surahNumVal}:${i}`];
+          return text ? { verse: { text_uthmani: text } } : {};
+        });
  
         quranInput.value = isRange
           ? textResults.map((data, idx) => data.verse ? data.verse.text_uthmani + ' ﴿' + ayahNums[idx] + '﴾ ' : '').join('').trim()
