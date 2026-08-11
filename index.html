@@ -353,15 +353,12 @@
         </div>
       </div>
  
-      <div class="lg:hidden w-full max-w-xs mt-2 mb-5 flex items-center gap-2 z-10 shrink-0">
-        <button onclick="shareVideoProcess()" class="flex-1 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-950/50 transition min-w-0">
+      <div class="lg:hidden w-full max-w-xs mt-2 mb-5 flex items-center gap-2.5 z-10 shrink-0">
+        <button onclick="shareVideoProcess()" class="flex-1 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition min-w-0">
           <i class="fa-solid fa-share-nodes text-sm shrink-0"></i>
           <span data-i18n="shareVideo" class="truncate">Share Video</span>
         </button>
-        <button onclick="startExportProcess()" title="Download MP4" data-i18n-title="export" class="w-12 py-3.5 rounded-2xl bg-slate-800 border border-slate-700 hover:bg-slate-700 active:scale-95 text-indigo-300 flex items-center justify-center shadow-lg shadow-indigo-950/30 transition shrink-0">
-          <i class="fa-solid fa-download text-base"></i>
-        </button>
-        <button onclick="openDonateModal()" class="flex-1 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-950/50 transition min-w-0">
+        <button onclick="openDonateModal()" class="flex-1 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition min-w-0">
           <i class="fa-solid fa-coins text-sm shrink-0"></i>
           <span data-i18n="donate" class="truncate">Donate</span>
         </button>
@@ -1009,6 +1006,17 @@
     window.addEventListener('resize', fitCanvasSize);
     window.addEventListener('orientationchange', fitCanvasSize);
  
+    // Mobile browsers commonly suspend the Web Audio graph while the tab is
+    // backgrounded (e.g. while the native share sheet or another app is in
+    // front). Proactively resuming it as soon as the person comes back —
+    // rather than only right before the next export — keeps that next
+    // Share/Download tap reliable instead of it failing silently.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => { /* will retry via setupAudioPipeline() on next export */ });
+      }
+    });
+ 
     function setFormat(format) {
       currentFormat = format;
       const btn916 = document.getElementById('btn916');
@@ -1302,6 +1310,33 @@
       progressText.textContent = '0%';
       isExporting = true;
  
+      try {
+        await runRecordingAttempt(deliveryMode, modal, progressBar, progressText);
+      } catch (err) {
+        // If anything in the recording setup throws — most commonly
+        // audioElement.play() getting rejected because the browser revoked
+        // playback permission while the tab was backgrounded (e.g. the
+        // person switched to WhatsApp to finish a share, or just left the
+        // tab and came back) — this used to leave isExporting stuck true
+        // and the modal stuck on "loading" forever, with every later tap
+        // doing nothing. Reset everything to a clean, retryable state
+        // instead.
+        console.warn('Export failed to start, resetting so it can be retried:', err);
+        isExporting = false;
+        if (exportAnimFrameId) cancelAnimationFrame(exportAnimFrameId);
+        if (activeRecorder && activeRecorder.state !== 'inactive') {
+          try { activeRecorder.stop(); } catch (e) { /* already stopped */ }
+        }
+        if (audioElement.src) {
+          try { audioElement.pause(); } catch (e) { /* ignore */ }
+        }
+        if (monitorGainNode) monitorGainNode.gain.value = 1;
+        modal.classList.add('hidden');
+      }
+    }
+ 
+    async function runRecordingAttempt(deliveryMode, modal, progressBar, progressText) {
+ 
       const duration = audioElement.duration && !isNaN(audioElement.duration) ? audioElement.duration : 5.0;
  
       const canvasStream = canvas.captureStream(0);
@@ -1388,7 +1423,16 @@
       await new Promise(resolve => setTimeout(resolve, 150));
  
       if (audioElement.src && isExporting) {
-        await audioElement.play();
+        try {
+          await audioElement.play();
+        } catch (playErr) {
+          // Playback can get rejected right after the tab was backgrounded
+          // (e.g. returning from the native share sheet or another app) —
+          // that alone shouldn't abort the whole recording, since the audio
+          // is captured through the Web Audio graph regardless of whether
+          // the <audio> element visibly resumed. Log it and keep going.
+          console.warn('audioElement.play() was rejected, continuing recording anyway:', playErr);
+        }
       }
  
       const startTime = performance.now();
