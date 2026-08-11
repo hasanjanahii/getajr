@@ -420,9 +420,11 @@
     </aside>
   </div>
  
-  <!-- RENDER PROGRESS MODAL -->
+  <!-- RENDER PROGRESS / READY-TO-SHARE MODAL -->
   <div id="exportModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center gap-4">
+ 
+    <!-- Rendering state: shown while the video is being recorded -->
+    <div id="exportModalRendering" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center gap-4">
       <div class="w-14 h-14 rounded-full bg-slate-800 text-indigo-400 border border-slate-700 flex items-center justify-center text-2xl">
         <i class="fa-solid fa-circle-notch fa-spin"></i>
       </div>
@@ -439,6 +441,37 @@
       <button onclick="cancelExportProcess()" class="mt-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-semibold text-xs transition flex items-center gap-2">
         <i class="fa-solid fa-xmark"></i>
         <span data-i18n="cancelExport">Cancel Export</span>
+      </button>
+    </div>
+ 
+    <!-- Ready-to-share state: shown once recording finishes for the mobile
+         Share flow. iOS Safari (and several other mobile browsers) will only
+         open the native share sheet if navigator.share() is called directly
+         from a fresh tap — calling it automatically right after recording
+         finishes gets silently rejected, since the original tap's "user
+         activation" has expired by then (recording takes as long as the
+         audio does). Waiting for this explicit tap keeps sharing reliable. -->
+    <div id="exportModalReady" class="hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center text-center gap-4 relative">
+      <button onclick="dismissShareReady()" class="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+ 
+      <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-600 via-violet-600 to-indigo-500 border border-indigo-400/30 flex items-center justify-center text-white text-2xl shadow-lg shadow-indigo-500/25">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-base text-slate-900 dark:text-slate-100" data-i18n="videoReadyTitle">Your video is ready!</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" data-i18n="videoReadySub">Tap below to share it to your favorite app.</p>
+      </div>
+ 
+      <button onclick="confirmShareNow()" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50">
+        <i class="fa-solid fa-share-nodes"></i>
+        <span data-i18n="shareNowBtn">Share Now</span>
+      </button>
+ 
+      <button onclick="downloadPendingShareBlob()" class="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition flex items-center gap-1.5">
+        <i class="fa-solid fa-download"></i>
+        <span data-i18n="downloadInstead">Download instead</span>
       </button>
     </div>
   </div>
@@ -603,6 +636,10 @@
         tabScript: "Script & Audio",
         renderingTitle: "May ALLAH grant you Jannah!",
         renderingSub: "Share it on social media with your friends & families.",
+        videoReadyTitle: "Your video is ready!",
+        videoReadySub: "Tap below to share it to your favorite app.",
+        shareNowBtn: "Share Now",
+        downloadInstead: "Download instead",
         cancelExport: "Cancel Export",
         donate: "Donate",
         donateTitle: "Support & Connect",
@@ -636,6 +673,10 @@
         tabScript: "النص والصوت",
         renderingTitle: "جاري تصدير فيديو MP4...",
         renderingSub: "يتم إنشاء الفيديو بأعلى جودة. يرجى الانتظار.",
+        videoReadyTitle: "فيديوك جاهز!",
+        videoReadySub: "اضغط أدناه لمشاركته على تطبيقك المفضل.",
+        shareNowBtn: "مشاركة الآن",
+        downloadInstead: "تنزيل بدلاً من ذلك",
         cancelExport: "إلغاء التصدير",
         donate: "تبرع",
         donateTitle: "الدعم والتواصل",
@@ -1161,8 +1202,8 @@
     // straight to WhatsApp, Instagram, TikTok, Messages, etc. without an
     // extra save-then-attach step. Falls back to a normal download if the
     // device/browser can't share video files (e.g. most desktop browsers).
-    async function deliverAsShare(blob) {
-      const fileName = `GetAjr_Quran_Video_${Date.now()}.mp4`;
+    async function deliverAsShare(blob, fileName) {
+      fileName = fileName || `GetAjr_Quran_Video_${Date.now()}.mp4`;
       const file = new File([blob], fileName, { type: 'video/mp4' });
       const shareText = (translations[currentLang] && translations[currentLang].shareText) || 'Check out this Quran verse video I made with GetAjr';
  
@@ -1184,6 +1225,51 @@
       }
  
       deliverAsDownload(blob);
+    }
+ 
+    // Holds the finished recording between "recording done" and the person's
+    // explicit "Share Now" tap — see the comment above #exportModalReady for
+    // why we wait for a fresh tap instead of sharing automatically.
+    let pendingShareBlob = null;
+    let pendingShareFileName = '';
+ 
+    function showRenderingModalState() {
+      document.getElementById('exportModalRendering').classList.remove('hidden');
+      document.getElementById('exportModalReady').classList.add('hidden');
+    }
+ 
+    function showReadyToShareModalState() {
+      document.getElementById('exportModalRendering').classList.add('hidden');
+      document.getElementById('exportModalReady').classList.remove('hidden');
+      document.getElementById('exportModal').classList.remove('hidden');
+    }
+ 
+    // Bound to the "Share Now" button — this runs directly inside that tap's
+    // click handler (no awaited delay beforehand), which is what keeps the
+    // native share sheet reliable on iOS Safari and other strict browsers.
+    async function confirmShareNow() {
+      if (!pendingShareBlob) return;
+      const blob = pendingShareBlob;
+      const fileName = pendingShareFileName;
+      pendingShareBlob = null;
+ 
+      document.getElementById('exportModal').classList.add('hidden');
+      await deliverAsShare(blob, fileName);
+      showRenderingModalState();
+    }
+ 
+    function downloadPendingShareBlob() {
+      if (!pendingShareBlob) return;
+      deliverAsDownload(pendingShareBlob);
+      pendingShareBlob = null;
+      document.getElementById('exportModal').classList.add('hidden');
+      showRenderingModalState();
+    }
+ 
+    function dismissShareReady() {
+      pendingShareBlob = null;
+      document.getElementById('exportModal').classList.add('hidden');
+      showRenderingModalState();
     }
  
     async function startExportProcess() {
@@ -1265,15 +1351,18 @@
         const finishedPlayIcon = document.getElementById('playIcon');
         if (finishedPlayIcon) finishedPlayIcon.className = "fa-solid fa-play ml-0.5";
  
-        // Hide our own "rendering" modal before handing off to the delivery
-        // step — for share mode that step opens the native OS share sheet,
-        // which shouldn't appear stacked on top of our modal.
-        modal.classList.add('hidden');
         isExporting = false;
  
         if (deliveryMode === 'share') {
-          await deliverAsShare(blob);
+          // Don't call navigator.share() here automatically — see the
+          // comment above #exportModalReady for why. Park the blob and
+          // switch the modal to a "ready to share" state with its own
+          // explicit button instead.
+          pendingShareBlob = blob;
+          pendingShareFileName = `GetAjr_Quran_Video_${Date.now()}.mp4`;
+          showReadyToShareModalState();
         } else {
+          modal.classList.add('hidden');
           deliverAsDownload(blob);
         }
       };
