@@ -1299,6 +1299,14 @@
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
         const previewPlayIcon = document.getElementById('playIcon');
         if (previewPlayIcon) previewPlayIcon.className = "fa-solid fa-play ml-0.5";
+        // Rewind here too (not just later in runRecordingAttempt), so the
+        // seek has the whole "opening the export modal" window to settle
+        // instead of racing a fixed delay right before playback resumes —
+        // that race is what caused the glitch/cut at the start of shared
+        // videos when Share was tapped while the preview was playing.
+        if (audioElement.src) {
+          audioElement.currentTime = 0;
+        }
       }
  
       const modal = document.getElementById('exportModal');
@@ -1402,8 +1410,32 @@
         }
       };
  
-      if (audioElement.src) {
-        audioElement.currentTime = 0;
+      if (audioElement.src && audioElement.currentTime !== 0) {
+        // Wait for the browser to actually confirm the seek finished
+        // ('seeked' fires) instead of assuming a fixed delay is long
+        // enough. When Share is tapped mid-playback, the decoder was
+        // still actively decoding when we paused/rewound it a moment
+        // ago, so it can take longer than a flat 150ms to settle — that
+        // race is what produced the glitch/cut at the start of the
+        // exported audio. If 'seeked' never fires for some reason, fall
+        // back to a timeout so export can't hang forever.
+        await new Promise(resolve => {
+          let done = false;
+          const onSeeked = () => {
+            if (done) return;
+            done = true;
+            audioElement.removeEventListener('seeked', onSeeked);
+            resolve();
+          };
+          audioElement.addEventListener('seeked', onSeeked);
+          audioElement.currentTime = 0;
+          setTimeout(() => {
+            if (done) return;
+            done = true;
+            audioElement.removeEventListener('seeked', onSeeked);
+            resolve();
+          }, 400);
+        });
       }
  
       // Start recorder first to prepare encoder buffers
@@ -1419,7 +1451,9 @@
       renderCanvas();
       videoTrack.requestFrame();
  
-      // Short 150ms priming delay before starting audio playback to avoid first-second drop
+      // Short priming delay before starting audio playback to avoid first-second drop.
+      // (The seek above is already settled by this point — this is just extra
+      // headroom for the encoder/pipeline, not a substitute for the seek wait.)
       await new Promise(resolve => setTimeout(resolve, 150));
  
       if (audioElement.src && isExporting) {
