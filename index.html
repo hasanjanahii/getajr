@@ -8,6 +8,21 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>GetAjr - Quran Video Editor</title>
+  <meta name="description" content="Create beautiful Quran verse videos to share as a reminder — pick any ayah, choose a reciter, customize the style, and export.">
+ 
+  <!-- Open Graph / social preview tags (WhatsApp, Facebook, Instagram, etc.) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="GetAjr - Quran Video Editor">
+  <meta property="og:description" content="Create beautiful Quran verse videos to share as a reminder — pick any ayah, choose a reciter, customize the style, and export.">
+  <meta property="og:image" content="https://getajr.com/og-image.png">
+  <meta property="og:url" content="https://getajr.com/">
+ 
+  <!-- Twitter/X Card tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="GetAjr - Quran Video Editor">
+  <meta name="twitter:description" content="Create beautiful Quran verse videos to share as a reminder — pick any ayah, choose a reciter, customize the style, and export.">
+  <meta name="twitter:image" content="https://getajr.com/og-image.png">
+ 
   <!-- Modern Clapperboard Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%234f46e5'/><stop offset='50%' stop-color='%237c3aed'/><stop offset='100%' stop-color='%236366f1'/></linearGradient></defs><rect width='100' height='100' rx='25' fill='url(%23g)'/><path d='M25 30 h50 a 5 5 0 0 1 5 5 v30 a 5 5 0 0 1 -5 5 h-50 a 5 5 0 0 1 -5 -5 v-30 a 5 5 0 0 1 5 -5 z' fill='none' stroke='white' stroke-width='6'/><path d='M20 42 h60 M35 30 l10 12 M55 30 l10 12' stroke='white' stroke-width='5' stroke-linecap='round'/></svg>">
   <!-- Tailwind CSS CDN -->
@@ -338,14 +353,17 @@
         </div>
       </div>
  
-      <div class="lg:hidden w-full max-w-xs mt-2 mb-5 flex items-center gap-2.5 z-10 shrink-0">
-        <button onclick="startExportProcess()" class="flex-1 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition">
-          <i class="fa-solid fa-download text-sm"></i>
-          <span data-i18n="export">Export MP4</span>
+      <div class="lg:hidden w-full max-w-xs mt-2 mb-5 flex items-center gap-2 z-10 shrink-0">
+        <button onclick="shareVideoProcess()" class="flex-1 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-950/50 transition min-w-0">
+          <i class="fa-solid fa-share-nodes text-sm shrink-0"></i>
+          <span data-i18n="shareVideo" class="truncate">Share Video</span>
         </button>
-        <button onclick="openDonateModal()" class="flex-1 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition">
-          <i class="fa-solid fa-coins text-sm"></i>
-          <span data-i18n="donate">Donate</span>
+        <button onclick="startExportProcess()" title="Download MP4" data-i18n-title="export" class="w-12 py-3.5 rounded-2xl bg-slate-800 border border-slate-700 hover:bg-slate-700 active:scale-95 text-indigo-300 flex items-center justify-center shadow-lg shadow-indigo-950/30 transition shrink-0">
+          <i class="fa-solid fa-download text-base"></i>
+        </button>
+        <button onclick="openDonateModal()" class="flex-1 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-950/50 transition min-w-0">
+          <i class="fa-solid fa-coins text-sm shrink-0"></i>
+          <span data-i18n="donate" class="truncate">Donate</span>
         </button>
       </div>
     </main>
@@ -561,6 +579,8 @@
       en: {
         subtitle: "Quran Video Creator",
         export: "Export MP4",
+        shareVideo: "Share Video",
+        shareText: "Check out this Quran verse video I made with GetAjr 🎬",
         styleTitle: "Canvas & Visuals",
         formatLabel: "Video Dimensions",
         colorsLabel: "Canvas Palette",
@@ -592,6 +612,8 @@
       ar: {
         subtitle: "صانع فيديوهات القرآن",
         export: "تصدير MP4",
+        shareVideo: "مشاركة الفيديو",
+        shareText: "شاهد هذا الفيديو القرآني الذي صنعته عبر GetAjr 🎬",
         styleTitle: "الأبعاد والتصميم",
         formatLabel: "أبعاد الفيديو",
         colorsLabel: "ألوان الفيديو",
@@ -904,6 +926,11 @@
         const key = el.getAttribute('data-i18n');
         if (translations[currentLang][key]) el.textContent = translations[currentLang][key];
       });
+ 
+      document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        const key = el.getAttribute('data-i18n-title');
+        if (translations[currentLang][key]) el.title = translations[currentLang][key];
+      });
     }
  
     function applySelectColorScheme() {
@@ -1117,7 +1144,57 @@
       }
     }
  
+    // Turns a finished recording Blob into a downloaded .mp4 file (original
+    // behavior, used on desktop always, and on mobile via the dedicated
+    // download button).
+    function deliverAsDownload(blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `GetAjr_Quran_Video_${Date.now()}.mp4`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+ 
+    // Turns a finished recording Blob into a native share-sheet invocation
+    // (mobile "Share Video" button), so the person can send the video
+    // straight to WhatsApp, Instagram, TikTok, Messages, etc. without an
+    // extra save-then-attach step. Falls back to a normal download if the
+    // device/browser can't share video files (e.g. most desktop browsers).
+    async function deliverAsShare(blob) {
+      const fileName = `GetAjr_Quran_Video_${Date.now()}.mp4`;
+      const file = new File([blob], fileName, { type: 'video/mp4' });
+      const shareText = (translations[currentLang] && translations[currentLang].shareText) || 'Check out this Quran verse video I made with GetAjr';
+ 
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'GetAjr - Quran Video',
+            text: shareText
+          });
+          return;
+        }
+      } catch (err) {
+        // The person closing/cancelling the native share sheet throws
+        // AbortError — that's a deliberate choice, not a failure, so don't
+        // fall back to forcing a download in that case.
+        if (err && err.name === 'AbortError') return;
+        console.warn('Share failed, falling back to download:', err);
+      }
+ 
+      deliverAsDownload(blob);
+    }
+ 
     async function startExportProcess() {
+      return runExportPipeline('download');
+    }
+ 
+    async function shareVideoProcess() {
+      return runExportPipeline('share');
+    }
+ 
+    async function runExportPipeline(deliveryMode) {
       // If the preview is currently playing, stop it first so its render/timer
       // loop doesn't keep running alongside the export (this was causing the
       // audio to be seeked/cut right at the start of the export, and left the
@@ -1172,15 +1249,9 @@
       const chunks = [];
  
       activeRecorder.ondataavailable = e => chunks.push(e.data);
-      activeRecorder.onstop = () => {
+      activeRecorder.onstop = async () => {
         if (!isExporting) return;
         const blob = new Blob(chunks, { type: 'video/mp4' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `GetAjr_Quran_Video_${Date.now()}.mp4`;
-        a.click();
-        URL.revokeObjectURL(url);
  
         if (monitorGainNode) monitorGainNode.gain.value = 1;
  
@@ -1194,8 +1265,17 @@
         const finishedPlayIcon = document.getElementById('playIcon');
         if (finishedPlayIcon) finishedPlayIcon.className = "fa-solid fa-play ml-0.5";
  
+        // Hide our own "rendering" modal before handing off to the delivery
+        // step — for share mode that step opens the native OS share sheet,
+        // which shouldn't appear stacked on top of our modal.
         modal.classList.add('hidden');
         isExporting = false;
+ 
+        if (deliveryMode === 'share') {
+          await deliverAsShare(blob);
+        } else {
+          deliverAsDownload(blob);
+        }
       };
  
       if (audioElement.src) {
@@ -1290,4 +1370,3 @@
 </body>
 </html>
  
-
