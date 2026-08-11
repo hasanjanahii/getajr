@@ -585,10 +585,6 @@
     let activeRecorder = null;
     let exportAnimFrameId = null;
     let isExporting = false;
-    // Tracks an in-flight "rewind audio to 0" seek across the export pipeline
-    // (see beginAudioRewind), so it can be started early and awaited later
-    // without re-seeking a second time.
-    let audioSeekReadyPromise = null;
  
     // Guards against overlapping viewAyahAndAudio() calls (e.g. rapid Surah/Ayah
     // changes on mobile) — without this, two in-flight fetches can race and leave
@@ -1292,32 +1288,7 @@
       return runExportPipeline('share');
     }
  
-    // Kicks off rewinding the audio to 0 and returns a promise that resolves
-    // once the browser has actually confirmed the seek settled (the 'seeked'
-    // event), not just once the `currentTime` property reads 0 — reading the
-    // property back is not reliable proof the underlying decoder is ready,
-    // since the property updates synchronously while the real seek is async.
-    // Falls back to a timeout so export can never hang if 'seeked' doesn't fire.
-    function beginAudioRewind() {
-      if (!audioElement.src) return Promise.resolve();
-      return new Promise(resolve => {
-        let done = false;
-        const finish = () => {
-          if (done) return;
-          done = true;
-          audioElement.removeEventListener('seeked', finish);
-          resolve();
-        };
-        audioElement.addEventListener('seeked', finish);
-        audioElement.currentTime = 0;
-        setTimeout(finish, 400);
-      });
-    }
- 
     async function runExportPipeline(deliveryMode) {
-      // Reset any leftover promise from a previous export attempt.
-      audioSeekReadyPromise = null;
- 
       // If the preview is currently playing, stop it first so its render/timer
       // loop doesn't keep running alongside the export (this was causing the
       // audio to be seeked/cut right at the start of the export, and left the
@@ -1328,14 +1299,14 @@
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
         const previewPlayIcon = document.getElementById('playIcon');
         if (previewPlayIcon) previewPlayIcon.className = "fa-solid fa-play ml-0.5";
-        // Start the rewind here too (not just later in runRecordingAttempt),
-        // so the seek has the whole "opening the export modal" window to
-        // settle instead of racing a fixed delay right before playback
-        // resumes — that race is what caused the glitch/cut at the start of
-        // shared videos when Share was tapped while the preview was playing.
-        // We keep the promise (not just fire-and-forget) so
-        // runRecordingAttempt can properly await its actual completion.
-        audioSeekReadyPromise = beginAudioRewind();
+        // When Share is tapped while the audio is actively playing, treat it
+        // as two separate actions — pause, THEN share — same as if the person
+        // had manually tapped pause and then tapped share themselves a moment
+        // later. Continuing straight into the export in the same instant is
+        // what caused the cut/glitch at the start of the shared video: the
+        // decoder hadn't actually settled from being paused mid-stream yet.
+        // Give it a real beat to settle before going any further.
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
  
       const modal = document.getElementById('exportModal');
@@ -1360,7 +1331,6 @@
         // instead.
         console.warn('Export failed to start, resetting so it can be retried:', err);
         isExporting = false;
-        audioSeekReadyPromise = null;
         if (exportAnimFrameId) cancelAnimationFrame(exportAnimFrameId);
         if (activeRecorder && activeRecorder.state !== 'inactive') {
           try { activeRecorder.stop(); } catch (e) { /* already stopped */ }
@@ -1440,20 +1410,8 @@
         }
       };
  
-      // Make sure the rewind-to-start seek has actually settled before we
-      // touch playback again. If runExportPipeline already started one
-      // (preview was playing when Share was tapped), await that same
-      // promise instead of re-seeking — re-seeking to the same position
-      // (0) a second time is not guaranteed to fire another 'seeked' event
-      // in every browser, which would make this wait a no-op right when
-      // it matters most. If nothing was started yet (preview was already
-      // paused), start it fresh now.
       if (audioElement.src) {
-        if (!audioSeekReadyPromise) {
-          audioSeekReadyPromise = beginAudioRewind();
-        }
-        await audioSeekReadyPromise;
-        audioSeekReadyPromise = null;
+        audioElement.currentTime = 0;
       }
  
       // Start recorder first to prepare encoder buffers
@@ -1469,9 +1427,7 @@
       renderCanvas();
       videoTrack.requestFrame();
  
-      // Short priming delay before starting audio playback to avoid first-second drop.
-      // (The seek above is already settled by this point — this is just extra
-      // headroom for the encoder/pipeline, not a substitute for the seek wait.)
+      // Short 150ms priming delay before starting audio playback to avoid first-second drop
       await new Promise(resolve => setTimeout(resolve, 150));
  
       if (audioElement.src && isExporting) {
